@@ -16,9 +16,7 @@ export default function Header() {
 				kanban
 			</div>
 			<div className='w-full h-24 border-b-2 border-black flex-1 flex items-center px-6 py-8 justify-between'>
-				<span className='text-2xl font-semibold'>
-					Board ID: {boardTitle}
-				</span>
+				<span className='text-4xl font-semibold'>{boardTitle}</span>
 				<button className={buttonVariants({ variant: 'neobrutalism' })}>
 					+ Add New Task
 				</button>

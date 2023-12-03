@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { DndContext, useDraggable } from '@dnd-kit/core';
 import { useQuery } from 'convex/react';
 import { useMemo, useState } from 'react';
+import { Board } from '@/lib/types';
 
 const testColumns = [
 	{
@@ -233,15 +234,6 @@ const BoardPage = ({ params }: { params: { board: string } }) => {
 	const [columns, setColumns] = useState(testColumns);
 
 	const [isDropped, setIsDropped] = useState(false);
-
-	const boards = useQuery(api.boards.get);
-
-	if (boards) {
-		console.log(boards.name);
-		console.log(params.board);
-		const filteredBoard = boards.filter(b => b._id === params.board);
-		setBoardTitle(filteredBoard[0].name);
-	}
 
 	function handleDragEnd(event) {
 		if (event.over && event.over.id === 'droppable') {

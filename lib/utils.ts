@@ -7,5 +7,6 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function randomUUID() {
-	return new ShortUniqueId({ length: 10 });
+	const uid = new ShortUniqueId({ length: 8 });
+	return uid.rnd();
 }

@@ -4,10 +4,10 @@ import { useBoardTitleContext } from '@/components/context/boardTitleContext';
 import { Column } from '@/components/ui/Column';
 import { Card, CardDescription, CardHeader } from '@/components/ui/card';
 import { api } from '@/convex/_generated/api';
-import { cn } from '@/lib/utils';
+import { cn, randomUUID } from '@/lib/utils';
 import { DndContext, useDraggable } from '@dnd-kit/core';
 import { useQuery } from 'convex/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Board } from '@/lib/types';
 
 const testColumns = [
@@ -28,18 +28,18 @@ const testColumns = [
 	},
 ];
 
-type Column = {
-	id: string;
-	title: string;
-	taskIds: string[];
-};
-
 type Task = {
 	title: string;
 	description: string;
 	id: string;
-	columnId: string;
 	subtasks: Subtask[];
+};
+
+type Column = {
+	id: string;
+	title: string;
+	status: string;
+	tasks: Task[];
 };
 
 type Subtask = {
@@ -231,9 +231,21 @@ const testTasks: Task[] = [
 const BoardPage = ({ params }: { params: { board: string } }) => {
 	const { setBoardTitle } = useBoardTitleContext();
 	const [tasks, setTasks] = useState(testTasks);
-	const [columns, setColumns] = useState(testColumns);
+	const [columns, setColumns] = useState([]);
+	const [currentBoard, setCurrentBoard] = useState();
 
 	const [isDropped, setIsDropped] = useState(false);
+
+	const board = useQuery(api.boards.getBoardByID, { boardID: params.board });
+
+	useEffect(() => {
+		if (board) {
+			setBoardTitle(board.name);
+			setCurrentBoard(board);
+			setColumns(board.columns);
+			console.log(columns);
+		}
+	}, [board]);
 
 	function handleDragEnd(event) {
 		if (event.over && event.over.id === 'droppable') {
@@ -253,11 +265,12 @@ const BoardPage = ({ params }: { params: { board: string } }) => {
 				{columns.map(c => {
 					return (
 						<Column
-							key={c.id}
-							columnId={c.id}
-							columnTitle={c.title}>
-							{filteredTasks(tasks, c).map(t => {
-								return <TaskCard key={t.id} task={t} />;
+							key={c.name}
+							columnId={c.name}
+							columnTitle={c.name}>
+							{c.tasks?.map(t => {
+								console.log(t);
+								return <TaskCard key={t.title} task={t} />;
 							})}
 						</Column>
 					);
@@ -288,6 +301,10 @@ function TaskCard({ task }: { task: Task }) {
 				transform: `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(4deg)`,
 		  }
 		: undefined;
+
+	const uuid = randomUUID();
+	console.log(uuid);
+
 	const shadow = isDragging ? 'shadow-xl scale-125' : 'shadow-md';
 	const rotate = isDragging ? 'rotate-12 transform' : '';
 

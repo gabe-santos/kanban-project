@@ -27,7 +27,7 @@ export function Column({
 				extraClasses,
 				hover
 			)}>
-			<h1 className='tracking-[2.4px] font-bold uppercase text-slate-600'>
+			<h1 className='tracking-[2.4px] font-bold uppercase text-slate-600 hover:border-2 hover:border-black rounded-md'>
 				{columnTitle}
 			</h1>
 			droppable id: {columnId}

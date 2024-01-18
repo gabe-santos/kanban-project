@@ -10,7 +10,6 @@ export default function Home() {
 				})} max-w-[174px]`}>
 				+ Add new column
 			</button>
-			<div>hello</div>
 		</div>
 	);
 }

@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useSidebarContext } from '../context/sidebarContext';
+import { useSidebarContext } from './context/sidebarContext';
 import Link from 'next/link';
 import {
 	Dialog,
@@ -12,11 +12,12 @@ import {
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
-} from './dialog';
+} from './ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { api } from '../../convex/_generated/api';
-import { useQuery } from 'convex/react';
+import { useBoardsContext } from './context/boards';
+import { BoardType } from '@/lib/types';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
 const testBoards = [
 	{
@@ -458,10 +459,17 @@ const testBoards = [
 	},
 ];
 
-export default function Sidebar() {
-	const { isOpen } = useSidebarContext();
+export default function Sidebar({ boards }: { boards: BoardType[] }) {
+	// const { isOpen } = useSidebarContext();
+	const [isOpen, setIsOpen] = useState(true);
+	// const { boards } = useBoardsContext();
+	// const [boards, setBoards] = useState(testBoards);
 
-	const boards = useQuery(api.boards.get);
+	const supabase = createClientComponentClient();
+
+	const toggleSidebar = async () => {
+		setIsOpen(!isOpen);
+	};
 
 	const classes = isOpen
 		? 'translate-x-0 ease-out'
@@ -473,13 +481,13 @@ export default function Sidebar() {
 			<div className='flex-1'>
 				<span className='uppercase font-bold'>All Boards</span>
 				{boards?.map(b => (
-					<li key={b._id} className='list-none'>
+					<li key={b.id} className='list-none'>
 						<Link
-							href={`/${b._id}`}
+							href={`/${b.id}`}
 							className={`${buttonVariants({
 								variant: 'link',
 							})}`}>
-							{b.name}
+							{b.title}
 						</Link>
 					</li>
 				))}
@@ -489,7 +497,11 @@ export default function Sidebar() {
 
 			<div className='flex flex-col'>
 				<Switch />
-				{/* <button onClick={toggleSidebar}>Hide Sidebar</button> */}
+				<button
+					className='absolute w-12 h-12 -right-12 bottom-20 bg-[#bc95d4] border-2 border-black rounded-r-md hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] font-bold text-xl'
+					onClick={toggleSidebar}>
+					{isOpen ? '<' : '>'}
+				</button>
 			</div>
 		</div>
 	);

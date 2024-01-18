@@ -1,14 +1,17 @@
-'use client';
-
-import { useBoardTitleContext } from '@/components/context/boardTitleContext';
-import { Column } from '@/components/ui/Column';
+import { Column } from '@/components/Column';
 import { Card, CardDescription, CardHeader } from '@/components/ui/card';
-import { api } from '@/convex/_generated/api';
 import { cn, randomUUID } from '@/lib/utils';
-import { DndContext, useDraggable } from '@dnd-kit/core';
-import { useQuery } from 'convex/react';
-import { useEffect, useMemo, useState } from 'react';
-import { Board } from '@/lib/types';
+// import { DndContext, useDraggable } from '@dnd-kit/core';
+// import { SortableContext } from '@dnd-kit/sortable';
+// import { use, useEffect, useMemo, useState } from 'react';
+import { BoardType, TaskType, ColumnType } from '@/lib/types';
+// import { useBoardsContext } from '@/components/context/boards';
+import supabase from '@/lib/supabase';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import UserBoard from '@/components/UserBoard';
+import { redirect } from 'next/navigation';
+// import { useDraggable } from '@dnd-kit/core';
 
 const testColumns = [
 	{
@@ -33,13 +36,6 @@ type Task = {
 	description: string;
 	id: string;
 	subtasks: Subtask[];
-};
-
-type Column = {
-	id: string;
-	title: string;
-	status: string;
-	tasks: Task[];
 };
 
 type Subtask = {
@@ -228,68 +224,94 @@ const testTasks: Task[] = [
 	},
 ];
 
-const BoardPage = ({ params }: { params: { board: string } }) => {
-	const { setBoardTitle } = useBoardTitleContext();
-	const [tasks, setTasks] = useState(testTasks);
-	const [columns, setColumns] = useState([]);
-	const [currentBoard, setCurrentBoard] = useState();
+export const revalidate = false;
 
-	const [isDropped, setIsDropped] = useState(false);
+export default async function BoardPage({
+	params,
+}: {
+	params: { board: string };
+}) {
+	const boardID = params.board;
 
-	const board = useQuery(api.boards.getBoardByID, { boardID: params.board });
+	const supabase = createServerComponentClient({ cookies });
 
-	useEffect(() => {
-		if (board) {
-			setBoardTitle(board.name);
-			setCurrentBoard(board);
-			setColumns(board.columns);
-			console.log(columns);
+	// const { data: user } = await supabase.auth.getUser();
+
+	// if (!user) {
+	// 	redirect('/demo');
+	// 	return <div>fuck you</div>;
+	// }
+
+	const { data: boardData, error: boardError } = await supabase
+		.from('boards')
+		.select('*')
+		.eq('id', boardID)
+		.single();
+
+	const { data: columnsData, error: columnsError } = await supabase
+		.from('columns')
+		.select('*')
+		.eq('board_id', boardID);
+
+	const { data: tasksData, error: tasksError } = await supabase
+		.from('tasks')
+		.select('*')
+		.eq('board_id', boardID);
+
+	const renderBoard = () => {
+		if (boardError) {
+			console.log(boardError.message);
+			if (boardError.code === '404') {
+				return <h1>Board not found</h1>;
+			} else {
+				return <h1>Something went wrong</h1>;
+			}
+		} else if (columnsError) {
+			console.log(columnsError.message);
+			return <h1>Something went wrong while fetching columns</h1>;
+		} else if (tasksError) {
+			console.log(tasksError.message);
+			return <h1>Something went wrong while fetching columns</h1>;
+		} else {
+			const newBoard: BoardType = {
+				title: boardData.title,
+				id: boardData.id,
+			};
+
+			const newColumns: ColumnType[] = columnsData.map(column => {
+				const newColumn: ColumnType = {
+					id: column.id,
+					title: column.title,
+					boardID: column.board_id,
+				};
+				return newColumn;
+			});
+
+			const newTasks: TaskType[] = tasksData.map(task => {
+				const newTask: TaskType = {
+					title: task.title,
+					id: task.id,
+					columnID: task.column_id,
+				};
+				return newTask;
+			});
+
+			return (
+				<UserBoard
+					board={newBoard}
+					columns={newColumns}
+					tasks={newTasks}
+				/>
+			);
 		}
-	}, [board]);
-
-	function handleDragEnd(event) {
-		if (event.over && event.over.id === 'droppable') {
-			setIsDropped(true);
-		}
-	}
-
-	const filteredTasks = (taskList: Task[], c: Column) => {
-		return taskList.filter(t => t.columnId === c.id);
 	};
 
-	// console.log(filteredTasks(tasks, columns[0]));
-
 	return (
-		<DndContext onDragEnd={handleDragEnd}>
-			<div className='p-8 w-full h-full flex gap-6 overflow-scroll bg-slate-100'>
-				{columns.map(c => {
-					return (
-						<Column
-							key={c.name}
-							columnId={c.name}
-							columnTitle={c.name}>
-							{c.tasks?.map(t => {
-								console.log(t);
-								return <TaskCard key={t.title} task={t} />;
-							})}
-						</Column>
-					);
-				})}
-			</div>
-		</DndContext>
-	);
-};
-
-const AddColumnPrompt = () => {
-	return (
-		<div className='flex flex-col items-center gap-4'>
-			This board is empty. Create a new column to get started.
-			<button className={`default max-w-[174px]`}>
-				+ Add new column
-			</button>
+		<div className='p-8 w-full h-full flex gap-6 overflow-scroll bg-slate-100 transition-all ease-in-out '>
+			{renderBoard()}
 		</div>
 	);
-};
+}
 
 function TaskCard({ task }: { task: Task }) {
 	const { attributes, listeners, setNodeRef, transform, isDragging } =
@@ -301,9 +323,6 @@ function TaskCard({ task }: { task: Task }) {
 				transform: `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(4deg)`,
 		  }
 		: undefined;
-
-	const uuid = randomUUID();
-	console.log(uuid);
 
 	const shadow = isDragging ? 'shadow-xl scale-125' : 'shadow-md';
 	const rotate = isDragging ? 'rotate-12 transform' : '';
@@ -324,5 +343,3 @@ function TaskCard({ task }: { task: Task }) {
 		</Card>
 	);
 }
-
-export default BoardPage;

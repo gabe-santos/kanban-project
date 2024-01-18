@@ -1,18 +1,27 @@
-interface Board {
-	name: string;
-	ownerID: string;
-}
+type BoardType = {
+	title: string;
+	id: string;
+};
 
-interface Column {
-	name: string;
+type BoardContext = {
+	boards: BoardType[];
+	setBoards: (boards: BoardType[]) => void;
+	currentBoard: BoardType;
+	setCurrentBoard: (board: BoardType) => void;
+	columns: ColumnType[];
+	setColumns: (columns: ColumnType[]) => void;
+};
+
+type ColumnType = {
+	title: string;
 	boardID: string;
-}
+	id: string;
+};
 
-interface Task {
+interface TaskType {
+	id: string;
 	title: string;
 	columnID: string;
-	description: string;
-	status: string;
 }
 
 interface User {
@@ -20,4 +29,4 @@ interface User {
 	password: string;
 }
 
-export type { Board, Column, Task, User };
+export type { BoardType, BoardContext, ColumnType, TaskType, User };

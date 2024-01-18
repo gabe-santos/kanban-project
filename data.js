@@ -75,7 +75,7 @@ const boards = [
 					{
 						title: 'Design settings and search pages',
 						description: '',
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Settings - Account page',
@@ -94,7 +94,7 @@ const boards = [
 					{
 						title: 'Add account management endpoints',
 						description: '',
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Upgrade plan',
@@ -113,7 +113,7 @@ const boards = [
 					{
 						title: 'Design onboarding flow',
 						description: '',
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Sign up page',
@@ -132,7 +132,7 @@ const boards = [
 					{
 						title: 'Add search enpoints',
 						description: '',
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Add search endpoint',
@@ -147,7 +147,7 @@ const boards = [
 					{
 						title: 'Add authentication endpoints',
 						description: '',
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Define user model',
@@ -163,7 +163,7 @@ const boards = [
 						title: 'Research pricing points of various competitors and trial different business models',
 						description:
 							"We know what we're planning to build for version one. Now we need to finalise the first pricing model we'll use. Keep iterating the subtasks until we have a coherent proposition.",
-						status: 'Doing',
+						columnId: 'Doing',
 						subtasks: [
 							{
 								title: 'Research competitor pricing and business models',

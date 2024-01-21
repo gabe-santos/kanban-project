@@ -1,17 +1,10 @@
-import { Column } from '@/components/Column';
 import { Card, CardDescription, CardHeader } from '@/components/ui/card';
-import { cn, randomUUID } from '@/lib/utils';
-// import { DndContext, useDraggable } from '@dnd-kit/core';
-// import { SortableContext } from '@dnd-kit/sortable';
-// import { use, useEffect, useMemo, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { BoardType, TaskType, ColumnType } from '@/lib/types';
-// import { useBoardsContext } from '@/components/context/boards';
-import supabase from '@/lib/supabase';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import UserBoard from '@/components/UserBoard';
 import { redirect } from 'next/navigation';
-// import { useDraggable } from '@dnd-kit/core';
 
 const testColumns = [
 	{
@@ -224,23 +217,35 @@ const testTasks: Task[] = [
 	},
 ];
 
-export const revalidate = false;
+function processBoardData(boardData, columnsData, tasksData) {
+	const newBoard = {
+		title: boardData.title,
+		id: boardData.id,
+	};
+
+	const newColumns = columnsData.map(column => ({
+		id: column.id,
+		title: column.title,
+		boardID: column.board_id,
+	}));
+
+	const newTasks = tasksData.map(task => ({
+		title: task.title,
+		id: task.id,
+		columnID: task.column_id,
+	}));
+
+	return { newBoard, newColumns, newTasks };
+}
 
 export default async function BoardPage({
-	params,
+	params: { board },
 }: {
 	params: { board: string };
 }) {
-	const boardID = params.board;
+	const boardID = board.trim();
 
 	const supabase = createServerComponentClient({ cookies });
-
-	// const { data: user } = await supabase.auth.getUser();
-
-	// if (!user) {
-	// 	redirect('/demo');
-	// 	return <div>fuck you</div>;
-	// }
 
 	const { data: boardData, error: boardError } = await supabase
 		.from('boards')
@@ -258,88 +263,26 @@ export default async function BoardPage({
 		.select('*')
 		.eq('board_id', boardID);
 
-	const renderBoard = () => {
-		if (boardError) {
-			console.log(boardError.message);
-			if (boardError.code === '404') {
-				return <h1>Board not found</h1>;
-			} else {
-				return <h1>Something went wrong</h1>;
-			}
-		} else if (columnsError) {
-			console.log(columnsError.message);
-			return <h1>Something went wrong while fetching columns</h1>;
-		} else if (tasksError) {
-			console.log(tasksError.message);
-			return <h1>Something went wrong while fetching columns</h1>;
-		} else {
-			const newBoard: BoardType = {
-				title: boardData.title,
-				id: boardData.id,
-			};
+	// Handle errors first with early returns
+	if (boardError || columnsError || tasksError) {
+		console.error(boardError || columnsError || tasksError);
+		const message =
+			boardError?.code === '404'
+				? 'Board not found'
+				: 'Something went wrong';
+		return <h1>{message}</h1>;
+	}
 
-			const newColumns: ColumnType[] = columnsData.map(column => {
-				const newColumn: ColumnType = {
-					id: column.id,
-					title: column.title,
-					boardID: column.board_id,
-				};
-				return newColumn;
-			});
+	// Handle the case where there are no columns
+	if (!columnsData.length) {
+		return <div>No columns: Create New Column Component goes here</div>;
+	}
 
-			const newTasks: TaskType[] = tasksData.map(task => {
-				const newTask: TaskType = {
-					title: task.title,
-					id: task.id,
-					columnID: task.column_id,
-				};
-				return newTask;
-			});
-
-			return (
-				<UserBoard
-					board={newBoard}
-					columns={newColumns}
-					tasks={newTasks}
-				/>
-			);
-		}
-	};
-
-	return (
-		<div className='p-8 w-full h-full flex gap-6 overflow-scroll bg-slate-100 transition-all ease-in-out '>
-			{renderBoard()}
-		</div>
+	const { newBoard, newColumns, newTasks } = processBoardData(
+		boardData,
+		columnsData,
+		tasksData
 	);
-}
 
-function TaskCard({ task }: { task: Task }) {
-	const { attributes, listeners, setNodeRef, transform, isDragging } =
-		useDraggable({
-			id: task.id,
-		});
-	const style = transform
-		? {
-				transform: `translate3d(${transform.x}px, ${transform.y}px, 0) rotate(4deg)`,
-		  }
-		: undefined;
-
-	const shadow = isDragging ? 'shadow-xl scale-125' : 'shadow-md';
-	const rotate = isDragging ? 'rotate-12 transform' : '';
-
-	return (
-		<Card
-			style={style}
-			ref={setNodeRef}
-			{...listeners}
-			{...attributes}
-			className={cn(
-				'w-full border-2 border-black p-2 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] rounded-lg'
-			)}>
-			<CardHeader>{task.title}</CardHeader>
-			<CardDescription>
-				of {task.subtasks.length} subtasks
-			</CardDescription>
-		</Card>
-	);
+	return <UserBoard board={newBoard} columns={newColumns} tasks={newTasks} />;
 }

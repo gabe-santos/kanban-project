@@ -15,8 +15,19 @@ export async function handleNewBoardFormSubmit({ name }: NewBoardFormValues) {
 	if (!user) {
 		console.log('No user found');
 	} else {
-		await supabase.from('boards').insert({ title, user_id: user.id });
-		console.log('New board created:', title);
-		// revalidatePath('/', 'layout');
+		const { data: newBoardId, error } = await supabase
+			.from('boards')
+			.insert({ title, user_id: user.id })
+			.select()
+			.single();
+
+		if (error) {
+			console.log('Error creating new board:', error);
+			return;
+		} else {
+			console.log('New board created:', title);
+			revalidatePath('/', 'layout');
+			return newBoardId;
+		}
 	}
 }

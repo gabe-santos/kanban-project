@@ -10,6 +10,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { handleNewBoardFormSubmit } from '@/app/actions';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export const newBoardFormSchema = z.object({
 	name: z.string().max(32),
@@ -19,6 +20,7 @@ export type NewBoardFormValues = z.infer<typeof newBoardFormSchema>;
 
 export default function NewBoardDialogForm() {
 	const [isOpen, setIsOpen] = useState(false);
+	const router = useRouter();
 	const { register, handleSubmit, reset } = useForm<
 		z.infer<typeof newBoardFormSchema>
 	>({
@@ -26,8 +28,9 @@ export default function NewBoardDialogForm() {
 	});
 
 	const onNewBoardFormSubmit = async (data: NewBoardFormValues) => {
-		await handleNewBoardFormSubmit(data);
+		const boardID = await handleNewBoardFormSubmit(data);
 		reset();
+		router.push(`/${boardID}`);
 	};
 
 	return (

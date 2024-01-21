@@ -2,22 +2,11 @@
 import { useState } from 'react';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
-import { useSidebarContext } from './context/sidebarContext';
 import Link from 'next/link';
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from './ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useBoardsContext } from './context/boards';
+
 import { BoardType } from '@/lib/types';
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+
+import NewBoardDialogForm from './NewBoardDialogForm';
 
 const testBoards = [
 	{
@@ -460,12 +449,7 @@ const testBoards = [
 ];
 
 export default function Sidebar({ boards }: { boards: BoardType[] }) {
-	// const { isOpen } = useSidebarContext();
 	const [isOpen, setIsOpen] = useState(true);
-	// const { boards } = useBoardsContext();
-	// const [boards, setBoards] = useState(testBoards);
-
-	const supabase = createClientComponentClient();
 
 	const toggleSidebar = async () => {
 		setIsOpen(!isOpen);
@@ -492,7 +476,7 @@ export default function Sidebar({ boards }: { boards: BoardType[] }) {
 					</li>
 				))}
 
-				<CreateBoardDialog />
+				<NewBoardDialogForm />
 			</div>
 
 			<div className='flex flex-col'>
@@ -506,52 +490,3 @@ export default function Sidebar({ boards }: { boards: BoardType[] }) {
 		</div>
 	);
 }
-
-const CreateBoardDialog = () => {
-	const defaultColumns = ['Todo', 'Doing', 'Done'];
-
-	return (
-		<Dialog>
-			<DialogTrigger asChild>
-				<Button variant='neobrutalism'>+ Create New Board</Button>
-			</DialogTrigger>
-			<DialogContent className='sm:max-w-[425px]'>
-				<DialogHeader>
-					<DialogTitle>Add New Board</DialogTitle>
-				</DialogHeader>
-				<div className='grid gap-4 py-4'>
-					<div className='flex flex-col justify-baseline gap-4'>
-						<Label htmlFor='board-title' className='text-left'>
-							Title
-						</Label>
-						<Input
-							id='board-title'
-							placeholder='e.g. Web Design'
-							className='w-full'
-						/>
-					</div>
-					<Label htmlFor='columns' className='text-left'>
-						Columns
-					</Label>
-					<div
-						id='columns'
-						className='flex flex-col justify-baseline gap-2'>
-						{defaultColumns.map(c => {
-							return (
-								<Input
-									key={c}
-									className='w-full'
-									defaultValue={c}
-								/>
-							);
-						})}
-					</div>
-					<Button variant='secondary'>+ Add Column</Button>
-				</div>
-				<DialogFooter>
-					<Button type='submit'>Save changes</Button>
-				</DialogFooter>
-			</DialogContent>
-		</Dialog>
-	);
-};

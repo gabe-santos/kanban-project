@@ -5,6 +5,7 @@ import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import UserBoard from '@/components/UserBoard';
 import { redirect } from 'next/navigation';
+import NewColumnDialogForm from '@/components/NewColumnDialogForm';
 
 const testColumns = [
 	{
@@ -271,11 +272,6 @@ export default async function BoardPage({
 				? 'Board not found'
 				: 'Something went wrong';
 		return <h1>{message}</h1>;
-	}
-
-	// Handle the case where there are no columns
-	if (!columnsData.length) {
-		return <div>No columns: Create New Column Component goes here</div>;
 	}
 
 	const { newBoard, newColumns, newTasks } = processBoardData(

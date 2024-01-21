@@ -12,6 +12,7 @@ import {
 	useSensors,
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
+import NewColumnDialogForm from './NewColumnDialogForm';
 
 interface UserBoardProps {
 	board: BoardType;
@@ -30,6 +31,11 @@ export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 	const handleDragStart = (event: DragStartEvent) => {};
 	const handleDragMove = (event: DragMoveEvent) => {};
 	const handleDragEnd = (event: DragEndEvent) => {};
+
+	// Handle the case where there are no columns
+	if (!columns.length) {
+		return <NewColumnDialogForm />;
+	}
 
 	return (
 		<DndContext

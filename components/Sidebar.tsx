@@ -448,7 +448,7 @@ const testBoards = [
 	},
 ];
 
-export default function Sidebar({ boards }: { boards: BoardType[] }) {
+export default function Sidebar({ children }: { children?: React.ReactNode }) {
 	const [isOpen, setIsOpen] = useState(true);
 
 	const toggleSidebar = async () => {
@@ -462,31 +462,16 @@ export default function Sidebar({ boards }: { boards: BoardType[] }) {
 	return (
 		<div
 			className={`w-[300px] h-[calc(100vh-96px)] flex flex-col px-8 items-baseline gap-7 py-4 border-0 border-r-2 border-black justify-between transition-all duration-300 top-24 ${classes}`}>
-			<div className='flex-1'>
-				<span className='uppercase font-bold'>All Boards</span>
-				{boards?.map(b => (
-					<li key={b.id} className='list-none'>
-						<Link
-							href={`/${b.id}`}
-							className={`${buttonVariants({
-								variant: 'link',
-							})}`}>
-							{b.title}
-						</Link>
-					</li>
-				))}
-
+			<div className='flex  flex-col flex-1 gap-7'>
+				{children}
 				<NewBoardDialogForm />
 			</div>
 
-			<div className='flex flex-col'>
-				<Switch />
-				<button
-					className='absolute w-12 h-12 -right-12 bottom-20 bg-[#bc95d4] border-2 border-black rounded-r-md hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] font-bold text-xl'
-					onClick={toggleSidebar}>
-					{isOpen ? '<' : '>'}
-				</button>
-			</div>
+			<button
+				className='absolute w-12 h-12 -right-12 bottom-20 bg-[#bc95d4] border-2 border-black rounded-r-md hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] font-bold text-xl'
+				onClick={toggleSidebar}>
+				{isOpen ? '<' : '>'}
+			</button>
 		</div>
 	);
 }

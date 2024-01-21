@@ -12,6 +12,7 @@ import { cookies } from 'next/headers';
 import { BoardType } from '@/lib/types';
 import Login from './login';
 import { redirect } from 'next/navigation';
+import BoardsList from '@/components/BoardsList';
 
 const bricolageGrotesque = Bricolage_Grotesque({ subsets: ['latin'] });
 
@@ -28,19 +29,19 @@ export default async function RootLayout({
 	children: React.ReactNode;
 }) {
 	const supabase = createServerComponentClient({ cookies });
-	const { data: boardData } = await supabase.from('boards').select();
+	const { data: boardData, error } = await supabase.from('boards').select();
+
 	const {
 		data: { user },
 	} = await supabase.auth.getUser();
 	const { data: session } = await supabase.auth.getSession();
 
-	const boards = boardData?.map((board: BoardType) => {
-		const newBoard = {
+	const boards: BoardType[] =
+		boardData?.map(board => ({
 			id: board.id,
 			title: board.title,
-		};
-		return newBoard;
-	});
+		})) || defaultBoards;
+	console.log(boards);
 
 	return (
 		<html lang='en'>
@@ -49,7 +50,12 @@ export default async function RootLayout({
 					<Login user={user} />
 				</Header>
 				<div className='w-full flex'>
-					<Sidebar boards={boards!} />
+					<Sidebar>
+						<span className='uppercase text-xl text-zinc-700'>
+							Boards
+						</span>
+						<BoardsList boards={boards} />
+					</Sidebar>
 					<div className='flex flex-col justify-center items-center flex-1 w-full h-[calc(100vh-96px)]'>
 						{children}
 					</div>

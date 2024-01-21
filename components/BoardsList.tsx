@@ -1,5 +1,4 @@
 import { BoardType } from '@/lib/types';
-import { buttonVariants } from './ui/button';
 import Link from 'next/link';
 
 export default function BoardsList({ boards }: { boards: BoardType[] }) {

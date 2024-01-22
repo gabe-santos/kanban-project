@@ -33,7 +33,7 @@ export default async function MenuLayout({
 			id: board.id,
 			title: board.title,
 		})) || defaultBoards;
-	console.log(boards);
+
 	return (
 		<div>
 			<CurrentBoardProvider>

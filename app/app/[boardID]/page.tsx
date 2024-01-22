@@ -42,8 +42,6 @@ export default async function BoardPage({
 	if (!session) {
 		console.log('no session');
 		redirect('/login');
-	} else {
-		console.log('session', session);
 	}
 
 	// TODO: Move these to api or separate file

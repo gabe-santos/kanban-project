@@ -29,11 +29,10 @@ function processBoardData(
 }
 
 export default async function BoardPage({
-	params: { board },
+	params: { boardID },
 }: {
-	params: { board: string };
+	params: { boardID: string };
 }) {
-	const boardID = board.trim();
 	const supabase = createServerComponentClient({ cookies });
 
 	// TODO: Move these to api or separate file

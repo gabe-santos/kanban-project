@@ -64,9 +64,7 @@ export default async function RootLayout({
 							</span>
 							<BoardsList boards={boards} />
 						</Sidebar>
-						<div className='flex flex-col justify-center items-center flex-1 w-full h-[calc(100vh-96px)]'>
-							{children}
-						</div>
+						{children}
 					</div>
 				</CurrentBoardProvider>
 			</body>

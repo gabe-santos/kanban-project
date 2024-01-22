@@ -38,7 +38,12 @@ export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 
 	// Handle the case where there are no columns
 	if (!columns.length) {
-		return <NewColumnDialogForm />;
+		return (
+			<div className='flex flex-col items-center'>
+				<h2>This board is empty</h2>
+				<NewColumnDialogForm />
+			</div>
+		);
 	}
 
 	return (

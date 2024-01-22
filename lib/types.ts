@@ -14,14 +14,14 @@ type BoardContext = {
 
 type ColumnType = {
 	title: string;
-	boardID: string;
+	board_id: string;
 	id: string;
 };
 
 interface TaskType {
 	id: string;
 	title: string;
-	columnID: string;
+	column_id: string;
 }
 
 interface User {

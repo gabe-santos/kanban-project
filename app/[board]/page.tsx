@@ -218,7 +218,11 @@ const testTasks: Task[] = [
 	},
 ];
 
-function processBoardData(boardData, columnsData, tasksData) {
+function processBoardData(
+	boardData: BoardType,
+	columnsData: ColumnType[],
+	tasksData: TaskType[]
+) {
 	const newBoard = {
 		title: boardData.title,
 		id: boardData.id,
@@ -227,13 +231,13 @@ function processBoardData(boardData, columnsData, tasksData) {
 	const newColumns = columnsData.map(column => ({
 		id: column.id,
 		title: column.title,
-		boardID: column.board_id,
+		board_id: column.board_id,
 	}));
 
 	const newTasks = tasksData.map(task => ({
 		title: task.title,
 		id: task.id,
-		columnID: task.column_id,
+		column_id: task.column_id,
 	}));
 
 	return { newBoard, newColumns, newTasks };

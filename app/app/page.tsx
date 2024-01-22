@@ -1,8 +1,6 @@
 import BoardCard from '@/components/BoardCard';
-import { Card, CardHeader } from '@/components/ui/card';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function Menu() {

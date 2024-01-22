@@ -39,7 +39,7 @@ export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 	// Handle the case where there are no columns
 	if (!columns.length) {
 		return (
-			<div className='flex flex-col items-center bg-blue-800 w-full'>
+			<div className='flex flex-col items-center bg-blue-800 w-full h-full'>
 				<h2 className='text-xl'>This board is empty</h2>
 				<NewColumnDialogForm />
 			</div>
@@ -47,20 +47,26 @@ export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 	}
 
 	return (
-		<DndContext
-			sensors={sensors}
-			collisionDetection={closestCorners}
-			onDragStart={handleDragStart}
-			onDragMove={handleDragMove}
-			onDragEnd={handleDragEnd}>
-			{columns.map(column => (
-				<div key={column.id}>
-					<h2>{column.title}</h2>
-					{tasks.map((task, index) => (
-						<div key={index}>{task.title}</div>
+		<div className='bg-green-800 h-full p-10'>
+			<DndContext
+				sensors={sensors}
+				collisionDetection={closestCorners}
+				onDragStart={handleDragStart}
+				onDragMove={handleDragMove}
+				onDragEnd={handleDragEnd}>
+				<div className='flex'>
+					{columns.map(column => (
+						<div key={column.id}>
+							<h2>{column.title}</h2>
+							{tasks.map((task, index) =>
+								task.column_id === column.id ? (
+									<div key={index}>{task.title}</div>
+								) : null
+							)}
+						</div>
 					))}
 				</div>
-			))}
-		</DndContext>
+			</DndContext>
+		</div>
 	);
 }

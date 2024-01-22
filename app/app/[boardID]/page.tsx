@@ -2,6 +2,7 @@ import { BoardType, TaskType, ColumnType } from '@/lib/types';
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
 import UserBoard from '@/components/UserBoard';
+import { redirect } from 'next/navigation';
 
 function processBoardData(
 	boardData: BoardType,
@@ -34,6 +35,16 @@ export default async function BoardPage({
 	params: { boardID: string };
 }) {
 	const supabase = createServerComponentClient({ cookies });
+	const {
+		data: { session },
+	} = await supabase.auth.getSession();
+
+	if (!session) {
+		console.log('no session');
+		redirect('/login');
+	} else {
+		console.log('session', session);
+	}
 
 	// TODO: Move these to api or separate file
 	const { data: boardData, error: boardError } = await supabase

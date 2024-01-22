@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import NewBoardDialogForm from './NewBoardDialogForm';
 
 export default function Sidebar({ children }: { children?: React.ReactNode }) {
-	const [isOpen, setIsOpen] = useState(true);
+	const [isOpen, setIsOpen] = useState(false);
 	const sidebarRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {

@@ -1,9 +1,3 @@
-import Login from '@/app/login';
-import { useBoardsContext } from './context/boards';
-import { useSidebarContext } from './context/sidebarContext';
-import Logo from './Logo';
-import { Button } from './ui/button';
-
 export default function Header({ children }: { children?: React.ReactNode }) {
 	return (
 		<div className='flex'>

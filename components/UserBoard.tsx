@@ -13,6 +13,7 @@ import {
 } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import NewColumnDialogForm from './NewColumnDialogForm';
+import { useCurrentBoardContext } from './context/CurrentBoardContext';
 
 interface UserBoardProps {
 	board: BoardType;
@@ -21,6 +22,9 @@ interface UserBoardProps {
 }
 
 export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
+	const { setCurrentBoard } = useCurrentBoardContext();
+	setCurrentBoard(board);
+
 	const sensors = useSensors(
 		useSensor(PointerSensor),
 		useSensor(KeyboardSensor, {

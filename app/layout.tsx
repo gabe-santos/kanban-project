@@ -13,6 +13,9 @@ import { BoardType } from '@/lib/types';
 import Login from './login';
 import { redirect } from 'next/navigation';
 import BoardsList from '@/components/BoardsList';
+import { Button } from '@/components/ui/button';
+import CurrentBoardName from '@/components/CurrentBoardName';
+import { CurrentBoardProvider } from '@/components/context/CurrentBoardContext';
 
 const bricolageGrotesque = Bricolage_Grotesque({ subsets: ['latin'] });
 
@@ -46,20 +49,26 @@ export default async function RootLayout({
 	return (
 		<html lang='en'>
 			<body className={`${bricolageGrotesque.className} h-screen`}>
-				<Header>
-					<Login user={user} />
-				</Header>
-				<div className='w-full flex'>
-					<Sidebar>
-						<span className='uppercase text-xl text-zinc-700'>
-							Boards
-						</span>
-						<BoardsList boards={boards} />
-					</Sidebar>
-					<div className='flex flex-col justify-center items-center flex-1 w-full h-[calc(100vh-96px)]'>
-						{children}
+				<CurrentBoardProvider>
+					<Header>
+						<CurrentBoardName />
+						<div className='flex-1 flex justify-around'>
+							<Button variant='neobrutalism'>+ New Task</Button>
+							<Login user={user} />
+						</div>
+					</Header>
+					<div className='w-full flex'>
+						<Sidebar>
+							<span className='uppercase text-xl text-zinc-700'>
+								Boards
+							</span>
+							<BoardsList boards={boards} />
+						</Sidebar>
+						<div className='flex flex-col justify-center items-center flex-1 w-full h-[calc(100vh-96px)]'>
+							{children}
+						</div>
 					</div>
-				</div>
+				</CurrentBoardProvider>
 			</body>
 		</html>
 	);

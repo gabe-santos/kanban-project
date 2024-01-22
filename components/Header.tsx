@@ -12,8 +12,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
 					kanvas
 				</span>
 			</div>
-			<div className='w-full h-24 border-b-2 border-black flex-1 flex items-center px-6 py-8 justify-between'>
-				<Button variant='neobrutalism'>+ New Task</Button>
+			<div className='w-full h-24 border-b-2 border-black flex-1 flex items-center justify-between'>
 				{children}
 			</div>
 		</div>

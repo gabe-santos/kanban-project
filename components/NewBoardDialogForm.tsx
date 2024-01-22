@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 export const newBoardFormSchema = z.object({
-	name: z.string().max(32),
+	name: z.string().min(1).max(32),
 });
 
 export type NewBoardFormValues = z.infer<typeof newBoardFormSchema>;
@@ -47,6 +47,8 @@ export default function NewBoardDialogForm() {
 						placeholder='e.g. Marketing Campaign'
 						className='w-full'
 						{...register('name')}
+						data-1p-ignore
+						required
 					/>
 				</div>
 				<Button type='submit' variant='neobrutalism'>

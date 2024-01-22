@@ -245,7 +245,6 @@ export default async function BoardPage({
 	params: { board: string };
 }) {
 	const boardID = board.trim();
-
 	const supabase = createServerComponentClient({ cookies });
 
 	const { data: boardData, error: boardError } = await supabase

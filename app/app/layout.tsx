@@ -35,7 +35,7 @@ export default async function MenuLayout({
 		})) || defaultBoards;
 
 	return (
-		<div>
+		<div className='h-screen'>
 			<CurrentBoardProvider>
 				<Header>
 					<CurrentBoardName />
@@ -52,8 +52,8 @@ export default async function MenuLayout({
 							<BoardsList boards={boards} />
 						</Suspense>
 					</Sidebar>
-					{children}
 				</div>
+				<div className='h-[calc(100vh-96px)]'>{children}</div>
 			</CurrentBoardProvider>
 		</div>
 	);

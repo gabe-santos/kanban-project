@@ -18,6 +18,7 @@ function processBoardData(
 		id: column.id,
 		title: column.title,
 		board_id: column.board_id,
+		position: column.position,
 	}));
 
 	const newTasks = tasksData.map(task => ({

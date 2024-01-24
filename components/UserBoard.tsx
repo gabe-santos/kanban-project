@@ -18,6 +18,7 @@ import {
 import NewColumnDialogForm from './NewColumnDialogForm';
 import { useCurrentBoardContext } from './context/CurrentBoardContext';
 import { useMemo } from 'react';
+import ColumnContainer from './ColumnContainer';
 
 interface UserBoardProps {
 	board: BoardType;
@@ -28,12 +29,16 @@ interface UserBoardProps {
 export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 	const { setCurrentBoard } = useCurrentBoardContext();
 	setCurrentBoard(board);
-	const columnIds = useMemo(() => columns.map(col => col.id), [columns]);
+	const columnPositions = useMemo(
+		() => columns.map(col => col.position),
+		[columns]
+	);
 
 	const sensors = useSensors(
-		useSensor(PointerSensor),
-		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates,
+		useSensor(PointerSensor, {
+			activationConstraint: {
+				distance: 10,
+			},
 		})
 	);
 
@@ -58,17 +63,16 @@ export default function UserBoard({ board, columns, tasks }: UserBoardProps) {
 				onDragStart={onDragStart}
 				onDragMove={onDragMove}
 				onDragEnd={onDragEnd}>
-				<div className='flex'>
-					<SortableContext items={columnIds}>
+				<div className='flex gap-4'>
+					<SortableContext items={columnPositions}>
 						{columns.map(column => (
-							<div key={column.id}>
-								<h2>{column.title}</h2>
-								{tasks.map((task, index) =>
-									task.column_id === column.id ? (
-										<div key={index}>{task.title}</div>
-									) : null
+							<ColumnContainer
+								column={column}
+								key={column.id}
+								tasks={tasks.filter(
+									tasks => tasks.column_id === column.id
 								)}
-							</div>
+							/>
 						))}
 					</SortableContext>
 				</div>

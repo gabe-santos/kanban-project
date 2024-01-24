@@ -33,9 +33,9 @@ export default function Sidebar({ children }: { children?: React.ReactNode }) {
 
 	return (
 		<div
-			className={`w-[300px] h-[calc(100vh-96px)] flex flex-col px-8 items-baseline gap-7 py-4 border-0 border-r-2 border-black justify-between transition-all duration-300 top-24 absolute ${classes} bg-white`}
+			className={`w-[300px] z-10 h-[calc(100vh-96px)] flex flex-col px-8 items-baseline gap-7 py-4 border-0 border-r-2 border-black justify-between transition-all duration-300 top-24 absolute ${classes} bg-white `}
 			ref={sidebarRef}>
-			<div className='flex flex-col flex-1 gap-7 z-10 '>
+			<div className='flex flex-col flex-1 gap-7'>
 				{children}
 				<NewBoardDialogForm />
 			</div>

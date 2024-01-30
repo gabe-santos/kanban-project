@@ -146,7 +146,7 @@ export default function UserBoard({
   };
 
   const createNewColumn = async () => {
-    const newColumn = {
+    const newColumn: ColumnType = {
       id: generateUUID(),
       title: "New Column",
       position: 0,

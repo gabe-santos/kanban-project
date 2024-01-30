@@ -18,6 +18,7 @@ type ColumnType = {
   board_id: string;
   id: string;
   position: number;
+  user_id: string;
 };
 
 interface TaskType {

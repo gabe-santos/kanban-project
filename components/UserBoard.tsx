@@ -200,16 +200,6 @@ export default function UserBoard({
     setColumns(updatedColumns);
   };
 
-  // Handle the case where there are no columns
-  if (!columnsData.length) {
-    return (
-      <div className="flex h-full w-full flex-col items-center bg-blue-800">
-        <h2 className="text-xl">This board is empty</h2>
-        <NewColumnDialogForm />
-      </div>
-    );
-  }
-
   return (
     <div className="flex min-h-full w-full overflow-x-auto overflow-y-hidden p-10">
       <DndContext

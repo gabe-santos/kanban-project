@@ -1,11 +1,11 @@
 import { ColumnType, TaskType } from "@/lib/types";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "./ui/input";
 import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
-import { Trash2Icon, TrashIcon } from "lucide-react";
+import { Trash2Icon } from "lucide-react";
 
 interface ColumnContainerProps {
   column: ColumnType;
@@ -27,6 +27,14 @@ export default function ColumnContainer({
   const [columnTitle, setColumnTitle] = useState(column.title);
   const [editMode, setEditMode] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // If edit mode is enabled, select the text in the input
+    if (editMode && inputRef.current) {
+      inputRef.current.select();
+    }
+  }, [editMode]);
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
@@ -84,6 +92,7 @@ export default function ColumnContainer({
           {!editMode && column.title}
           {editMode && (
             <Input
+              ref={inputRef}
               value={columnTitle}
               autoFocus
               onBlur={toggleEditMode}

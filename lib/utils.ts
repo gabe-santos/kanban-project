@@ -1,12 +1,12 @@
-import { type ClassValue, clsx } from 'clsx';
-import { twMerge } from 'tailwind-merge';
-import ShortUniqueId from 'short-unique-id';
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+import ShortUniqueId from "short-unique-id";
+import { v4 as uuidv4 } from "uuid";
 
 export function cn(...inputs: ClassValue[]) {
-	return twMerge(clsx(inputs));
+  return twMerge(clsx(inputs));
 }
 
 export function generateUUID() {
-	const uid = new ShortUniqueId({ length: 32 });
-	return uid.rnd();
+  return uuidv4();
 }

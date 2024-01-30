@@ -9,9 +9,10 @@ function processBoardData(
   columnsData: ColumnType[],
   tasksData: TaskType[],
 ) {
-  const newBoard = {
+  const newBoard: BoardType = {
     title: boardData.title,
     id: boardData.id,
+    user_id: boardData.user_id,
   };
 
   const newColumns = columnsData.map((column) => ({

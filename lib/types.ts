@@ -1,6 +1,7 @@
 type BoardType = {
   title: string;
   id: string;
+  user_id: string;
 };
 
 type BoardContext = {

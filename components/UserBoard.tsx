@@ -25,8 +25,9 @@ import { Button } from "./ui/button";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { PlusIcon } from "lucide-react";
-import { on } from "events";
 import { generateUUID } from "@/lib/utils";
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { useToast } from "./ui/use-toast";
 
 interface UserBoardProps {
   boardData: BoardType;
@@ -39,6 +40,9 @@ export default function UserBoard({
   columnsData,
   tasksData,
 }: UserBoardProps) {
+  const supabase = createClientComponentClient();
+  const { toast } = useToast();
+
   const { setCurrentBoard } = useCurrentBoardContext();
   setCurrentBoard(boardData);
   const columnIndexes = useMemo(
@@ -141,13 +145,20 @@ export default function UserBoard({
     });
   };
 
-  const createNewColumn = () => {
-    const newColumn: ColumnType = {
+  const createNewColumn = async () => {
+    const newColumn = {
       id: generateUUID(),
       title: "New Column",
       position: 0,
       board_id: boardData.id,
+      user_id: boardData.user_id,
     };
+
+    const res = await supabase.from("columns").insert([newColumn]).select();
+    if (res.error) {
+      toast({ description: "Error creating column" });
+      return;
+    }
 
     setColumns((columns) => [...columns, newColumn]);
   };

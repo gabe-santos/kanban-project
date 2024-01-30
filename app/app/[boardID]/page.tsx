@@ -47,6 +47,8 @@ export default async function BoardPage({
     redirect("/login");
   }
 
+  console.log(boardID);
+
   // TODO: Move these to api or separate file
   const { data: boardData, error: boardError } = await supabase
     .from("boards")

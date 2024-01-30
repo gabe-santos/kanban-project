@@ -31,7 +31,7 @@ export default function ColumnContainer({
     transition,
     isDragging,
   } = useSortable({
-    id: column.id,
+    id: column.position,
     data: {
       type: "column",
       column,

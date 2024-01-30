@@ -39,7 +39,7 @@ export default function UserBoard({
   const { setCurrentBoard } = useCurrentBoardContext();
   setCurrentBoard(boardData);
   const columnIndexes = useMemo(
-    () => columnsData.map((col) => col.id),
+    () => columnsData.map((col) => col.position),
     [columnsData],
   );
 
@@ -127,8 +127,12 @@ export default function UserBoard({
     if (!isActiveColumn) return;
 
     setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-      const overColumnIndex = columns.findIndex((col) => col.id === overId);
+      const activeColumnIndex = columns.findIndex(
+        (col) => col.position === activeId,
+      );
+      const overColumnIndex = columns.findIndex(
+        (col) => col.position === overId,
+      );
 
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
     });

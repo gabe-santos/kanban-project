@@ -19,7 +19,7 @@ import {
 } from "@dnd-kit/sortable";
 import NewColumnDialogForm from "./NewColumnDialogForm";
 import { useCurrentBoardContext } from "./context/CurrentBoardContext";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import { Button } from "./ui/button";
 import { createPortal } from "react-dom";
@@ -223,22 +223,23 @@ export default function UserBoard({
           <AddColumnButton onClick={createNewColumn} />
         </div>
 
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && (
-              <ColumnContainer
-                column={activeColumn}
-                tasks={tasks.filter(
-                  (task) => task.column_id === activeColumn.id,
-                )}
-                updateColumn={updateColumn}
-                deleteColumn={deleteColumn}
-              />
-            )}
-            {activeTask && <TaskCard task={activeTask} />}
-          </DragOverlay>,
-          document.body,
-        )}
+        {typeof window === "object" &&
+          createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <ColumnContainer
+                  column={activeColumn}
+                  tasks={tasks.filter(
+                    (task) => task.column_id === activeColumn.id,
+                  )}
+                  updateColumn={updateColumn}
+                  deleteColumn={deleteColumn}
+                />
+              )}
+              {activeTask && <TaskCard task={activeTask} />}
+            </DragOverlay>,
+            document.body,
+          )}
       </DndContext>
     </div>
   );

@@ -46,7 +46,7 @@ export default function UserBoard({
   const { setCurrentBoard } = useCurrentBoardContext();
   setCurrentBoard(boardData);
   const columnIndexes = useMemo(
-    () => columnsData.map((col) => col.position),
+    () => columnsData.map((col) => col.id),
     [columnsData],
   );
 
@@ -134,13 +134,11 @@ export default function UserBoard({
     if (!isActiveColumn) return;
 
     setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex(
-        (col) => col.position === activeId,
-      );
-      const overColumnIndex = columns.findIndex(
-        (col) => col.position === overId,
-      );
+      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+      const overColumnIndex = columns.findIndex((col) => col.id === overId);
 
+      // TODO: use this to update position values in db and probably rename to index
+      console.log(activeColumnIndex, overColumnIndex);
       return arrayMove(columns, activeColumnIndex, overColumnIndex);
     });
   };
@@ -225,6 +223,7 @@ export default function UserBoard({
                 tasks={tasks.filter(
                   (task) => task.column_id === activeColumn.id,
                 )}
+                updateColumn={updateColumn}
               />
             )}
             {activeTask && <TaskCard task={activeTask} />}

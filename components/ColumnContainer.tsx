@@ -88,6 +88,7 @@ export default function ColumnContainer({
           onClick={() => {
             toggleEditMode();
           }}
+          className="w-full"
         >
           {!editMode && column.title}
           {editMode && (

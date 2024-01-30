@@ -4,17 +4,21 @@ import { useMemo, useState } from "react";
 import { Input } from "./ui/input";
 import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
+import { Button } from "./ui/button";
+import { Trash2Icon, TrashIcon } from "lucide-react";
 
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
   updateColumn: (id: string, title: string) => void;
+  deleteColumn: (id: string) => void;
 }
 
 export default function ColumnContainer({
   column,
   tasks,
   updateColumn,
+  deleteColumn,
 }: ColumnContainerProps) {
   const tasksIds = useMemo(() => {
     return tasks.map((task: TaskType) => task.id);
@@ -22,6 +26,7 @@ export default function ColumnContainer({
 
   const [columnTitle, setColumnTitle] = useState(column.title);
   const [editMode, setEditMode] = useState(false);
+  const [mouseOver, setMouseOver] = useState(false);
 
   const toggleEditMode = () => {
     setEditMode(!editMode);
@@ -67,26 +72,41 @@ export default function ColumnContainer({
       <div
         {...attributes}
         {...listeners}
-        onClick={() => {
-          toggleEditMode();
-        }}
-        className="h-[60px] rounded-t-md bg-white p-3"
+        onMouseEnter={() => setMouseOver(true)}
+        onMouseLeave={() => setMouseOver(false)}
+        className="flex h-[60px] items-center justify-between gap-2 rounded-t-md bg-white p-3"
       >
-        {!editMode && column.title}
-        {editMode && (
-          <Input
-            value={columnTitle}
-            autoFocus
-            onBlur={toggleEditMode}
-            onKeyDown={(e) => {
-              if (e.key !== "Enter") return;
-              updateColumn(column.id, columnTitle);
-              setEditMode(false);
+        <div
+          onClick={() => {
+            toggleEditMode();
+          }}
+        >
+          {!editMode && column.title}
+          {editMode && (
+            <Input
+              value={columnTitle}
+              autoFocus
+              onBlur={toggleEditMode}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter") return;
+                updateColumn(column.id, columnTitle);
+                setEditMode(false);
+              }}
+              onChange={(e) => {
+                setColumnTitle(e.target.value);
+              }}
+            />
+          )}
+        </div>
+        {mouseOver && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              deleteColumn(column.id);
             }}
-            onChange={(e) => {
-              setColumnTitle(e.target.value);
-            }}
-          />
+          >
+            <Trash2Icon />
+          </Button>
         )}
       </div>
 

@@ -183,6 +183,23 @@ export default function UserBoard({
     setColumns(updatedColumns);
   };
 
+  const deleteColumn = async (id: string) => {
+    const { data, error } = await supabase
+      .from("columns")
+      .delete()
+      .eq("id", id)
+      .select();
+    if (error) {
+      toast({ description: "Error deleting column" });
+      return;
+    } else {
+      toast({ description: "Column deleted" });
+    }
+
+    const updatedColumns: ColumnType[] = columns.filter((col) => col.id !== id);
+    setColumns(updatedColumns);
+  };
+
   // Handle the case where there are no columns
   if (!columnsData.length) {
     return (
@@ -209,6 +226,7 @@ export default function UserBoard({
                 key={c.id}
                 tasks={tasks.filter((tasks) => tasks.column_id === c.id)}
                 updateColumn={updateColumn}
+                deleteColumn={deleteColumn}
               />
             ))}
           </SortableContext>
@@ -224,6 +242,7 @@ export default function UserBoard({
                   (task) => task.column_id === activeColumn.id,
                 )}
                 updateColumn={updateColumn}
+                deleteColumn={deleteColumn}
               />
             )}
             {activeTask && <TaskCard task={activeTask} />}

@@ -8,15 +8,19 @@ import TaskCard from "./TaskCard";
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
+  updateColumn: (id: string, title: string) => void;
 }
 
 export default function ColumnContainer({
   column,
   tasks,
+  updateColumn,
 }: ColumnContainerProps) {
   const tasksIds = useMemo(() => {
     return tasks.map((task: TaskType) => task.id);
   }, [tasks]);
+
+  const [columnTitle, setColumnTitle] = useState(column.title);
   const [editMode, setEditMode] = useState(false);
 
   const toggleEditMode = () => {
@@ -31,7 +35,7 @@ export default function ColumnContainer({
     transition,
     isDragging,
   } = useSortable({
-    id: column.position,
+    id: column.id,
     data: {
       type: "column",
       column,
@@ -71,12 +75,16 @@ export default function ColumnContainer({
         {!editMode && column.title}
         {editMode && (
           <Input
-            value={column.title}
+            value={columnTitle}
             autoFocus
             onBlur={toggleEditMode}
             onKeyDown={(e) => {
               if (e.key !== "Enter") return;
+              updateColumn(column.id, columnTitle);
               setEditMode(false);
+            }}
+            onChange={(e) => {
+              setColumnTitle(e.target.value);
             }}
           />
         )}

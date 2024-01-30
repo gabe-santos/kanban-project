@@ -15,14 +15,15 @@ function processBoardData(
     user_id: boardData.user_id,
   };
 
-  const newColumns = columnsData.map((column) => ({
+  const newColumns: ColumnType[] = columnsData.map((column) => ({
     id: column.id,
     title: column.title,
     board_id: column.board_id,
     position: column.position,
+    user_id: column.user_id,
   }));
 
-  const newTasks = tasksData.map((task) => ({
+  const newTasks: TaskType[] = tasksData.map((task) => ({
     title: task.title,
     id: task.id,
     column_id: task.column_id,

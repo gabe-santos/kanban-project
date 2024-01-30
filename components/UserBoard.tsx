@@ -163,6 +163,28 @@ export default function UserBoard({
     setColumns((columns) => [...columns, newColumn]);
   };
 
+  const updateColumn = async (id: string, title: string) => {
+    const { data, error } = await supabase
+      .from("columns")
+      .update({ title })
+      .eq("id", id)
+      .select();
+    if (error) {
+      toast({ description: "Error updating column" });
+      return;
+    } else {
+      toast({ description: "Column updated" });
+    }
+
+    const updatedColumns: ColumnType[] = columns.map((col) => {
+      if (col.id === id) {
+        return { ...col, title };
+      }
+      return col;
+    });
+    setColumns(updatedColumns);
+  };
+
   // Handle the case where there are no columns
   if (!columnsData.length) {
     return (
@@ -188,6 +210,7 @@ export default function UserBoard({
                 column={c}
                 key={c.id}
                 tasks={tasks.filter((tasks) => tasks.column_id === c.id)}
+                updateColumn={updateColumn}
               />
             ))}
           </SortableContext>

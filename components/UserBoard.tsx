@@ -24,6 +24,8 @@ import ColumnContainer from "./ColumnContainer";
 import { Button } from "./ui/button";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
+import { PlusIcon } from "lucide-react";
+import { on } from "events";
 
 interface UserBoardProps {
   boardData: BoardType;
@@ -138,6 +140,17 @@ export default function UserBoard({
     });
   };
 
+  const createNewColumn = () => {
+    const newColumn: ColumnType = {
+      id: "0",
+      title: "New Column",
+      position: 0,
+      board_id: boardData.id,
+    };
+
+    setColumns((columns) => [...columns, newColumn]);
+  };
+
   // Handle the case where there are no columns
   if (!columnsData.length) {
     return (
@@ -166,9 +179,7 @@ export default function UserBoard({
               />
             ))}
           </SortableContext>
-          <Button variant="neobrutalism" className="">
-            Add Column
-          </Button>
+          <AddColumnButton onClick={createNewColumn} />
         </div>
 
         {createPortal(
@@ -189,3 +200,16 @@ export default function UserBoard({
     </div>
   );
 }
+
+const AddColumnButton = ({ onClick }: { onClick: () => void }) => {
+  return (
+    <Button
+      variant="outline"
+      onClick={onClick}
+      className="flex h-[60px] w-[350px] min-w-[350px] cursor-pointer justify-start gap-2 border-2 border-zinc-400 p-4 hover:border-black"
+    >
+      <PlusIcon />
+      Add Column
+    </Button>
+  );
+};

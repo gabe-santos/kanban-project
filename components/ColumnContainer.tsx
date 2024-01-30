@@ -66,7 +66,7 @@ export default function ColumnContainer({
         onClick={() => {
           toggleEditMode();
         }}
-        className="h-12 rounded-t-md bg-white p-3"
+        className="h-[60px] rounded-t-md bg-white p-3"
       >
         {!editMode && column.title}
         {editMode && (

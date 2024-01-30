@@ -31,14 +31,10 @@ export default async function Menu() {
         {boardData.map((b) => {
           return <BoardCard key={b.id} boardID={b.id} boardName={b.title} />;
         })}
-        <Button
-          variant={"outline"}
-          className="h-[200px] cursor-pointer rounded-md border-2 border-dashed border-black px-10 py-3"
-        >
-          <PlusIcon />
-          <div className="text-2xl">Create New Board</div>
-        </Button>
-        <NewBoardDialogForm />
+        <NewBoardDialogForm
+          buttonVariant="outline"
+          buttonClasses="h-[200px] cursor-pointer rounded-md border-2 border-dashed border-black px-10 py-3 text-2xl"
+        />
       </div>
     </div>
   );

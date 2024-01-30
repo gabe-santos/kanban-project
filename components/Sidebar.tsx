@@ -1,50 +1,52 @@
-'use client';
-import { useEffect, useRef, useState } from 'react';
-import NewBoardDialogForm from './NewBoardDialogForm';
+"use client";
+import { useEffect, useRef, useState } from "react";
+import NewBoardDialogForm from "./NewBoardDialogForm";
 
 export default function Sidebar({ children }: { children?: React.ReactNode }) {
-	const [isOpen, setIsOpen] = useState(false);
-	const sidebarRef = useRef<HTMLDivElement | null>(null);
+  const [isOpen, setIsOpen] = useState(false);
+  const sidebarRef = useRef<HTMLDivElement | null>(null);
 
-	useEffect(() => {
-		const handleClickOutside = (event: MouseEvent) => {
-			if (
-				sidebarRef.current &&
-				!sidebarRef.current.contains(event.target as Node)
-			) {
-				setIsOpen(false);
-			}
-		};
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
 
-		document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
 
-		return () => {
-			document.removeEventListener('mousedown', handleClickOutside);
-		};
-	}, [sidebarRef]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [sidebarRef]);
 
-	const toggleSidebar = async () => {
-		setIsOpen(!isOpen);
-	};
+  const toggleSidebar = async () => {
+    setIsOpen(!isOpen);
+  };
 
-	const classes = isOpen
-		? 'translate-x-0 ease-out'
-		: 'translate-x-[-100%] ease-in fixed';
+  const classes = isOpen
+    ? "translate-x-0 ease-out"
+    : "translate-x-[-100%] ease-in fixed";
 
-	return (
-		<div
-			className={`w-[300px] z-10 h-[calc(100vh-96px)] flex flex-col px-8 items-baseline gap-7 py-4 border-0 border-r-2 border-black justify-between transition-all duration-300 top-24 absolute ${classes} bg-white `}
-			ref={sidebarRef}>
-			<div className='flex flex-col flex-1 gap-7'>
-				{children}
-				<NewBoardDialogForm />
-			</div>
+  return (
+    <div
+      className={`absolute top-24 z-10 flex h-[calc(100vh-96px)] w-[300px] flex-col items-baseline justify-between gap-7 border-0 border-r-2 border-black px-8 py-4 transition-all duration-300 ${classes} bg-white `}
+      ref={sidebarRef}
+    >
+      <div className="flex w-full flex-1 flex-col gap-7">
+        {children}
+        <NewBoardDialogForm buttonVariant="neobrutalism" buttonClasses="" />
+      </div>
 
-			<button
-				className='absolute w-12 h-12 -right-12 bottom-20 bg-[#bc95d4] border-2 border-black rounded-r-md hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] font-bold text-xl'
-				onClick={toggleSidebar}>
-				{isOpen ? '<' : '>'}
-			</button>
-		</div>
-	);
+      <button
+        className="absolute -right-12 bottom-20 h-12 w-12 rounded-r-md border-2 border-black bg-[#bc95d4] text-xl font-bold transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        onClick={toggleSidebar}
+      >
+        {isOpen ? "<" : ">"}
+      </button>
+    </div>
+  );
 }

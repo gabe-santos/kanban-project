@@ -11,6 +11,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { handleNewBoardFormSubmit } from "@/app/actions";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { PlusIcon } from "lucide-react";
 
 export const newBoardFormSchema = z.object({
   name: z.string().min(1).max(32),
@@ -18,7 +19,22 @@ export const newBoardFormSchema = z.object({
 
 export type NewBoardFormValues = z.infer<typeof newBoardFormSchema>;
 
-export default function NewBoardDialogForm() {
+export default function NewBoardDialogForm({
+  buttonClasses,
+  buttonVariant,
+}: {
+  buttonClasses?: string;
+  buttonVariant?:
+    | "link"
+    | "default"
+    | "destructive"
+    | "outline"
+    | "secondary"
+    | "ghost"
+    | "neobrutalism"
+    | null
+    | undefined;
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const { register, handleSubmit, reset } = useForm<
@@ -34,7 +50,17 @@ export default function NewBoardDialogForm() {
   };
 
   return (
-    <UserDialog buttonTitle="+ New Board" dialogTitle="Add New Board">
+    <UserDialog
+      buttonTitle={
+        <div className="flex items-center gap-2">
+          <PlusIcon />
+          <h1>Create New Board</h1>
+        </div>
+      }
+      dialogTitle="Add New Board"
+      buttonClasses={buttonClasses}
+      buttonVariant={buttonVariant}
+    >
       <form
         onSubmit={handleSubmit((data) => onNewBoardFormSubmit(data))}
         className="grid gap-4 py-4"

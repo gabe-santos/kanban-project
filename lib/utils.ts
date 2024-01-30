@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
-export function randomUUID() {
-	const uid = new ShortUniqueId({ length: 8 });
+export function generateUUID() {
+	const uid = new ShortUniqueId({ length: 32 });
 	return uid.rnd();
 }

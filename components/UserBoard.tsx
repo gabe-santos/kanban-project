@@ -26,6 +26,7 @@ import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { PlusIcon } from "lucide-react";
 import { on } from "events";
+import { generateUUID } from "@/lib/utils";
 
 interface UserBoardProps {
   boardData: BoardType;
@@ -142,7 +143,7 @@ export default function UserBoard({
 
   const createNewColumn = () => {
     const newColumn: ColumnType = {
-      id: "0",
+      id: generateUUID(),
       title: "New Column",
       position: 0,
       board_id: boardData.id,

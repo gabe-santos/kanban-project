@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { Trash2Icon, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ColumnContainerProps {
   column: ColumnType;
@@ -28,6 +29,7 @@ export default function ColumnContainer({
   const [editMode, setEditMode] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const height = 1000;
 
   useEffect(() => {
     // If edit mode is enabled, select the text in the input
@@ -60,12 +62,14 @@ export default function ColumnContainer({
     transform: CSS.Transform.toString(transform),
   };
 
+  const sharedStyles = "h-[1000px] max-h-[1000px] w-[350px] rounded-sm";
+
   if (isDragging) {
     return (
       <div
         ref={setNodeRef}
         style={style}
-        className="flex h-[800px] max-h-[800px] w-[350px] flex-col rounded-md border-2 border-black"
+        className={cn(`flex flex-col border-2 border-black`, sharedStyles)}
       ></div>
     );
   }
@@ -74,7 +78,10 @@ export default function ColumnContainer({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex h-[1000px] max-h-[1000px] w-[350px] flex-col gap-4 rounded-sm border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+      className={cn(
+        ` flex w-[350px] flex-col gap-4 border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
+        sharedStyles,
+      )}
     >
       {/* TITLE */}
       <div

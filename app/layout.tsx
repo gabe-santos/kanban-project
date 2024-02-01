@@ -11,7 +11,7 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${bricolageGrotesque.className} h-screen`}>
+      <body className={`${bricolageGrotesque.className} h-screen bg-[#e7e5e4]`}>
         {children}
         <Toaster />
       </body>

@@ -1,8 +1,6 @@
 import BoardCard from "@/components/BoardCard";
 import NewBoardDialogForm from "@/components/NewBoardDialogForm";
-import { Button } from "@/components/ui/button";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { PlusIcon } from "lucide-react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 

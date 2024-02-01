@@ -74,7 +74,7 @@ export default function ColumnContainer({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex h-[800px] max-h-[800px] w-[350px] flex-col rounded-md border-2 border-black bg-zinc-200 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+      className="flex h-[800px] max-h-[800px] w-[350px] flex-col gap-4 rounded-sm border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
     >
       {/* TITLE */}
       <div
@@ -82,7 +82,7 @@ export default function ColumnContainer({
         {...listeners}
         onMouseEnter={() => setMouseOver(true)}
         onMouseLeave={() => setMouseOver(false)}
-        className="flex h-[60px] items-center justify-between gap-2 rounded-t-md bg-white p-3"
+        className="flex h-[60px] items-center justify-between gap-2 rounded-t-md border-b-2 border-black text-xl"
       >
         <div
           onClick={() => {
@@ -121,7 +121,7 @@ export default function ColumnContainer({
       </div>
 
       {/* CONTENT */}
-      <div className="flex flex-grow flex-col gap-4 p-3">
+      <div className="flex flex-grow flex-col gap-4">
         <SortableContext items={tasksIds}>
           {tasks.map((task) => {
             return <TaskCard key={task.id} task={task} />;

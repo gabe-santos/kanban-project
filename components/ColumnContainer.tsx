@@ -5,7 +5,7 @@ import { Input } from "./ui/input";
 import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon, X } from "lucide-react";
 
 interface ColumnContainerProps {
   column: ColumnType;
@@ -114,8 +114,9 @@ export default function ColumnContainer({
             onClick={() => {
               deleteColumn(column.id);
             }}
+            className="border-0 p-0 hover:bg-transparent"
           >
-            <Trash2Icon />
+            <X />
           </Button>
         )}
       </div>

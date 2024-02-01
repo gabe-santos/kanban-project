@@ -42,7 +42,7 @@ export default function TaskCard({ task }: TaskCardProps) {
       <Card
         ref={setNodeRef}
         style={style}
-        className="relative z-20 flex h-[100px] cursor-grabbing flex-col justify-center border-2 border-black bg-transparent shadow-none"
+        className="relative z-20 flex h-[200px] cursor-grabbing flex-col justify-center border-2 border-black bg-transparent shadow-none"
       ></Card>
     );
   }
@@ -65,11 +65,9 @@ export default function TaskCard({ task }: TaskCardProps) {
       onMouseEnter={() => setMouseIsOver(true)}
       onMouseLeave={() => setMouseIsOver(false)}
       style={style}
-      className={`flex h-[100px] cursor-grab flex-col justify-between rounded-md border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+      className={`flex h-[200px] cursor-grab flex-col justify-between rounded-md border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
     >
-      <CardContent className="group flex items-center justify-between">
-        {task.title}
-      </CardContent>
+      <CardContent className="p-4 text-2xl">{task.title}</CardContent>
       {mouseIsOver && (
         <Button onClick={() => changeColor()}>change color</Button>
       )}

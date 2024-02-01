@@ -39,13 +39,11 @@ export default async function MenuLayout({
       <CurrentBoardProvider>
         <Header>
           <CurrentBoardName />
-          <div className="flex-1 flex justify-around">
-            <Login user={user} />
-          </div>
+          <Login user={user} />
         </Header>
-        <div className="w-full flex">
+        <div className="flex w-full">
           <Sidebar>
-            <span className="uppercase text-xl text-zinc-700">Boards</span>
+            <span className="text-xl uppercase text-zinc-700">Boards</span>
             <Suspense fallback={<div>Loading...</div>}>
               <BoardsList boards={boards} />
             </Suspense>

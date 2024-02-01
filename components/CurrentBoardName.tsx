@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import { useCurrentBoardContext } from './context/CurrentBoardContext';
+import { useCurrentBoardContext } from "./context/CurrentBoardContext";
 
 export default function CurrentBoardName() {
-	const { currentBoard } = useCurrentBoardContext();
+  const { currentBoard } = useCurrentBoardContext();
 
-	const currentBoardName = currentBoard ? currentBoard.title : '';
+  const currentBoardName = currentBoard ? currentBoard.title : "";
 
-	return (
-		<div className='text-6xl border-black h-full border-r-2 p-4 flex-1 whitespace-nowrap overflow-hidden'>
-			{currentBoardName}
-		</div>
-	);
+  return (
+    <div className="h-full flex-1 overflow-hidden whitespace-nowrap p-4 text-6xl">
+      {currentBoardName}
+    </div>
+  );
 }

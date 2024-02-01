@@ -33,7 +33,7 @@ export default function Sidebar({ children }: { children?: React.ReactNode }) {
 
   return (
     <div
-      className={`absolute top-24 z-10 flex h-[calc(100vh-96px)] w-[300px] flex-col items-baseline justify-between gap-7 border-0 border-r-2 border-black px-8 py-4 transition-all duration-300 ${classes} bg-white `}
+      className={`absolute top-24 z-10 flex h-[calc(100vh-96px)] w-[300px] flex-col items-baseline justify-between gap-7  border-r border-black px-8 py-4 transition-all duration-300 ${classes} bg-white `}
       ref={sidebarRef}
     >
       <div className="flex w-full flex-1 flex-col gap-7">

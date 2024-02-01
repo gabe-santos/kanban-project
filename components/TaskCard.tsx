@@ -4,8 +4,6 @@ import { useSortable } from "@dnd-kit/sortable";
 import { useState } from "react";
 import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
 import { CSS } from "@dnd-kit/utilities";
-import MoreDropdown from "./MoreDropdown";
-import { cn } from "@/lib/utils";
 import { Button } from "./ui/button";
 
 interface TaskCardProps {
@@ -39,11 +37,11 @@ export default function TaskCard({ task }: TaskCardProps) {
 
   if (isDragging) {
     return (
-      <Card
+      <div
         ref={setNodeRef}
         style={style}
         className="relative z-20 flex h-[200px] cursor-grabbing flex-col justify-center border-2 border-black bg-transparent shadow-none"
-      ></Card>
+      ></div>
     );
   }
 
@@ -65,7 +63,7 @@ export default function TaskCard({ task }: TaskCardProps) {
       onMouseEnter={() => setMouseIsOver(true)}
       onMouseLeave={() => setMouseIsOver(false)}
       style={style}
-      className={`flex h-[200px] cursor-grab flex-col justify-between rounded-md border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+      className={`flex h-[200px] cursor-grab flex-col justify-between border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
     >
       <CardContent className="p-4 text-2xl">{task.title}</CardContent>
       {mouseIsOver && (

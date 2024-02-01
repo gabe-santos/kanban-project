@@ -74,7 +74,7 @@ export default function ColumnContainer({
     <div
       ref={setNodeRef}
       style={style}
-      className="flex h-[800px] max-h-[800px] w-[350px] flex-col gap-4 rounded-sm border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+      className="flex h-[1000px] max-h-[1000px] w-[350px] flex-col gap-4 rounded-sm border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
     >
       {/* TITLE */}
       <div

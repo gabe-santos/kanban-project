@@ -4,6 +4,10 @@ import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
+export const metadata = {
+  title: "Boards",
+};
+
 export default async function Menu() {
   const supabase = createServerComponentClient({ cookies });
   const {

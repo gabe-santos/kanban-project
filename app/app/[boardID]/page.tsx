@@ -4,6 +4,23 @@ import { cookies } from "next/headers";
 import UserBoard from "@/components/UserBoard";
 import { redirect } from "next/navigation";
 
+export async function generateMetadata({
+  params: { boardID },
+}: {
+  params: { boardID: string };
+}) {
+  const supabase = createServerComponentClient({ cookies });
+  const { data: board } = await supabase
+    .from("boards")
+    .select("*")
+    .eq("id", boardID)
+    .single();
+
+  return {
+    title: board.title,
+  };
+}
+
 function processBoardData(
   boardData: BoardType,
   columnsData: ColumnType[],
@@ -46,8 +63,6 @@ export default async function BoardPage({
     console.log("no session");
     redirect("/login");
   }
-
-  console.log(boardID);
 
   // TODO: Move these to api or separate file
   const { data: boardData, error: boardError } = await supabase

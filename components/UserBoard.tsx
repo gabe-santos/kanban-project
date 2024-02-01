@@ -6,20 +6,13 @@ import {
   DragMoveEvent,
   DragOverlay,
   DragStartEvent,
-  KeyboardSensor,
   PointerSensor,
-  closestCorners,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  arrayMove,
-  sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
-import NewColumnDialogForm from "./NewColumnDialogForm";
+import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { useCurrentBoardContext } from "./context/CurrentBoardContext";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import { Button } from "./ui/button";
 import { createPortal } from "react-dom";

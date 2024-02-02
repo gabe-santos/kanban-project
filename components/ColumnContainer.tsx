@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
-import { X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 interface ColumnContainerProps {
   column: ColumnType;
@@ -78,63 +78,73 @@ export default function ColumnContainer({
       ref={setNodeRef}
       style={style}
       className={cn(
-        `flex w-[350px] flex-col gap-4 border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
+        `flex w-[350px] flex-col justify-between gap-4 border border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
         sharedStyles,
       )}
     >
-      {/* TITLE */}
-      <div
-        {...attributes}
-        {...listeners}
-        onMouseEnter={() => setMouseOver(true)}
-        onMouseLeave={() => setMouseOver(false)}
-        className="flex h-[60px] items-center justify-between gap-2 rounded-t-md border-b-2 border-black text-xl"
-      >
+      <div className="flex flex-col gap-4 px-6">
+        {/* TITLE */}
         <div
-          onClick={() => {
-            toggleEditMode();
-          }}
-          className="w-full"
+          {...attributes}
+          {...listeners}
+          onMouseEnter={() => setMouseOver(true)}
+          onMouseLeave={() => setMouseOver(false)}
+          className="flex h-[60px] items-center justify-between gap-2 rounded-t-md border-b-2 border-black text-xl"
         >
-          {!editMode && column.title}
-          {editMode && (
-            <Input
-              ref={inputRef}
-              value={columnTitle}
-              autoFocus
-              onBlur={toggleEditMode}
-              onKeyDown={(e) => {
-                if (e.key !== "Enter") return;
-                updateColumn(column.id, columnTitle);
-                setEditMode(false);
-              }}
-              onChange={(e) => {
-                setColumnTitle(e.target.value);
-              }}
-            />
-          )}
-        </div>
-        {mouseOver && (
+          <div
+            onClick={() => {
+              toggleEditMode();
+            }}
+            className="w-full"
+          >
+            {!editMode && column.title}
+            {editMode && (
+              <Input
+                ref={inputRef}
+                value={columnTitle}
+                autoFocus
+                onBlur={toggleEditMode}
+                onKeyDown={(e) => {
+                  if (e.key !== "Enter") return;
+                  updateColumn(column.id, columnTitle);
+                  setEditMode(false);
+                }}
+                onChange={(e) => {
+                  setColumnTitle(e.target.value);
+                }}
+              />
+            )}
+          </div>
           <Button
             variant="outline"
             onClick={() => {
               deleteColumn(column.id);
             }}
-            className="border-0 p-0 hover:bg-transparent"
+            className="border-0 bg-white p-0 opacity-0 transition-opacity duration-0 hover:bg-white hover:opacity-100"
           >
             <X />
           </Button>
-        )}
-      </div>
+        </div>
 
-      {/* CONTENT */}
-      <div className="flex flex-grow flex-col gap-4">
-        <SortableContext items={tasksIds}>
-          {tasks.map((task) => {
-            return <TaskCard key={task.id} task={task} />;
-          })}
-        </SortableContext>
+        {/* CONTENT */}
+        <div className="flex flex-grow flex-col gap-4">
+          <SortableContext items={tasksIds}>
+            {tasks.map((task) => {
+              return <TaskCard key={task.id} task={task} />;
+            })}
+          </SortableContext>
+        </div>
       </div>
+      <Button
+        onClick={() => {
+          console.log("clicked");
+        }}
+        variant="outline"
+        className="rounded-b-sm rounded-t-none bg-white text-black opacity-30 transition-opacity duration-0 hover:bg-zinc-200 hover:opacity-100"
+      >
+        <Plus />
+        Add Card
+      </Button>
     </div>
   );
 }

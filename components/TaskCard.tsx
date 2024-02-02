@@ -47,7 +47,6 @@ export default function TaskCard({ task }: TaskCardProps) {
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev);
-    setMouseIsOver(false);
   };
 
   const changeColor = () => {
@@ -60,15 +59,16 @@ export default function TaskCard({ task }: TaskCardProps) {
       ref={setNodeRef}
       {...attributes}
       {...listeners}
-      onMouseEnter={() => setMouseIsOver(true)}
-      onMouseLeave={() => setMouseIsOver(false)}
       style={style}
       className={`flex h-[200px] cursor-grab flex-col justify-between border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
     >
       <CardContent className="p-4 text-2xl">{task.title}</CardContent>
-      {mouseIsOver && (
-        <Button onClick={() => changeColor()}>change color</Button>
-      )}
+      <Button
+        onClick={() => changeColor()}
+        className="opacity-0 hover:opacity-100"
+      >
+        change color
+      </Button>
     </Card>
   );
 }

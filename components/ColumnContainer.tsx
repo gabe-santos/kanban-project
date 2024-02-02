@@ -13,6 +13,7 @@ interface ColumnContainerProps {
   tasks: TaskType[];
   updateColumn: (id: string, title: string) => void;
   deleteColumn: (id: string) => void;
+  addTask: (columnId: string, title: string) => void;
 }
 
 export default function ColumnContainer({
@@ -20,6 +21,7 @@ export default function ColumnContainer({
   tasks,
   updateColumn,
   deleteColumn,
+  addTask,
 }: ColumnContainerProps) {
   const tasksIds = useMemo(() => {
     return tasks.map((task: TaskType) => task.id);
@@ -109,6 +111,7 @@ export default function ColumnContainer({
                 onChange={(e) => {
                   setColumnTitle(e.target.value);
                 }}
+                className="rounded-none border-none px-2 py-0 text-xl focus-visible:ring-1"
               />
             )}
           </div>
@@ -134,7 +137,7 @@ export default function ColumnContainer({
       </div>
       <Button
         onClick={() => {
-          console.log("clicked");
+          addTask(column.id, "New Task");
         }}
         variant="outline"
         className="rounded-b-sm rounded-t-none bg-white text-black opacity-30 transition-opacity duration-0 hover:bg-zinc-200 hover:opacity-100"

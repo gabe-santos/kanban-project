@@ -193,6 +193,24 @@ export default function UserBoard({
     setColumns(updatedColumns);
   };
 
+  const addTask = async (columnId: string, title: string) => {
+    const newTask: TaskType = {
+      id: generateUUID(),
+      title,
+      column_id: columnId,
+      user_id: boardData.user_id,
+      board_id: boardData.id,
+    };
+
+    const res = await supabase.from("tasks").insert([newTask]).select();
+    if (res.error) {
+      toast({ description: "Error creating task" });
+      return;
+    }
+
+    setTasks((tasks) => [...tasks, newTask]);
+  };
+
   return (
     <div className="flex min-h-full w-full overflow-x-auto overflow-y-hidden p-10">
       <DndContext
@@ -210,6 +228,7 @@ export default function UserBoard({
                 tasks={tasks.filter((tasks) => tasks.column_id === c.id)}
                 updateColumn={updateColumn}
                 deleteColumn={deleteColumn}
+                addTask={addTask}
               />
             ))}
           </SortableContext>
@@ -227,6 +246,7 @@ export default function UserBoard({
                   )}
                   updateColumn={updateColumn}
                   deleteColumn={deleteColumn}
+                  addTask={addTask}
                 />
               )}
               {activeTask && <TaskCard task={activeTask} />}

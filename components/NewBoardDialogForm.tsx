@@ -8,7 +8,7 @@ import { z } from "zod";
 import { Form } from "./ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { handleNewBoardFormSubmit } from "@/app/actions";
+import { handleNewBoardFormSubmit } from "@/actions/boards";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { PlusIcon } from "lucide-react";

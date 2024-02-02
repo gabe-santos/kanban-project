@@ -6,6 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
+import { X } from "lucide-react";
 
 interface ColumnContainerProps {
   column: ColumnType;

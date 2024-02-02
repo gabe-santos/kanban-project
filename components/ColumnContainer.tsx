@@ -27,7 +27,6 @@ export default function ColumnContainer({
 
   const [columnTitle, setColumnTitle] = useState(column.title);
   const [editMode, setEditMode] = useState(false);
-  const [mouseOver, setMouseOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -87,8 +86,6 @@ export default function ColumnContainer({
         <div
           {...attributes}
           {...listeners}
-          onMouseEnter={() => setMouseOver(true)}
-          onMouseLeave={() => setMouseOver(false)}
           className="flex h-[60px] items-center justify-between gap-2 rounded-t-md border-b-2 border-black text-xl"
         >
           <div

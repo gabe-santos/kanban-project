@@ -5,7 +5,6 @@ import { Input } from "./ui/input";
 import { CSS } from "@dnd-kit/utilities";
 import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
-import { Trash2Icon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface ColumnContainerProps {
@@ -29,7 +28,6 @@ export default function ColumnContainer({
   const [editMode, setEditMode] = useState(false);
   const [mouseOver, setMouseOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  const height = 1000;
 
   useEffect(() => {
     // If edit mode is enabled, select the text in the input
@@ -79,7 +77,7 @@ export default function ColumnContainer({
       ref={setNodeRef}
       style={style}
       className={cn(
-        ` flex w-[350px] flex-col gap-4 border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
+        `flex w-[350px] flex-col gap-4 border border-black bg-white px-6 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
         sharedStyles,
       )}
     >

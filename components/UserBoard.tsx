@@ -19,8 +19,8 @@ import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { PlusIcon } from "lucide-react";
 import { generateUUID } from "@/lib/utils";
-import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
 import { useToast } from "./ui/use-toast";
+import { createClient } from "@/utils/supabase/client";
 
 interface UserBoardProps {
   boardData: BoardType;
@@ -33,7 +33,7 @@ export default function UserBoard({
   columnsData,
   tasksData,
 }: UserBoardProps) {
-  const supabase = createClientComponentClient();
+  const supabase = createClient();
   const { toast } = useToast();
 
   const { setCurrentBoard } = useCurrentBoardContext();

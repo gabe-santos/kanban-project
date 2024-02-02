@@ -7,6 +7,7 @@ import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
+import deleteColumnHandler from "@/actions/columns";
 
 interface ColumnContainerProps {
   column: ColumnType;
@@ -118,7 +119,8 @@ export default function ColumnContainer({
           <Button
             variant="outline"
             onClick={() => {
-              deleteColumn(column.id);
+              // deleteColumn(column.id);
+              deleteColumnHandler(column.id);
             }}
             className="border-0 bg-white p-0 opacity-0 transition-opacity duration-0 hover:bg-white hover:opacity-100"
           >

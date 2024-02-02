@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Logo from "./Logo";
 
 export default function Header({ children }: { children?: React.ReactNode }) {
   return (
@@ -8,7 +9,7 @@ export default function Header({ children }: { children?: React.ReactNode }) {
           className="flex h-full w-full items-center justify-center overflow-hidden text-center text-7xl"
           href="/"
         >
-          kanvas
+          <Logo />
         </Link>
       </div>
       <div className="flex h-24 w-full flex-1 items-center justify-between border-b border-black">

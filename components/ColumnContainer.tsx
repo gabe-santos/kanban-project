@@ -7,12 +7,14 @@ import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
+import deleteColumnHandler from "@/actions/columns";
 
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
   updateColumn: (id: string, title: string) => void;
   deleteColumn: (id: string) => void;
+  addTask: (columnId: string, title: string) => void;
 }
 
 export default function ColumnContainer({
@@ -20,6 +22,7 @@ export default function ColumnContainer({
   tasks,
   updateColumn,
   deleteColumn,
+  addTask,
 }: ColumnContainerProps) {
   const tasksIds = useMemo(() => {
     return tasks.map((task: TaskType) => task.id);
@@ -109,13 +112,15 @@ export default function ColumnContainer({
                 onChange={(e) => {
                   setColumnTitle(e.target.value);
                 }}
+                className="rounded-none border-none px-2 py-0 text-xl focus-visible:ring-1"
               />
             )}
           </div>
           <Button
             variant="outline"
             onClick={() => {
-              deleteColumn(column.id);
+              // deleteColumn(column.id);
+              deleteColumnHandler(column.id);
             }}
             className="border-0 bg-white p-0 opacity-0 transition-opacity duration-0 hover:bg-white hover:opacity-100"
           >
@@ -134,7 +139,7 @@ export default function ColumnContainer({
       </div>
       <Button
         onClick={() => {
-          console.log("clicked");
+          addTask(column.id, "New Task");
         }}
         variant="outline"
         className="rounded-b-sm rounded-t-none bg-white text-black opacity-30 transition-opacity duration-0 hover:bg-zinc-200 hover:opacity-100"

@@ -4,22 +4,22 @@ import { cookies } from "next/headers";
 import UserBoard from "@/components/UserBoard";
 import { redirect } from "next/navigation";
 
-export async function generateMetadata({
-  params: { boardID },
-}: {
-  params: { boardID: string };
-}) {
-  const supabase = createServerComponentClient({ cookies });
-  const { data: board } = await supabase
-    .from("boards")
-    .select("*")
-    .eq("id", boardID)
-    .single();
+// export async function generateMetadata({
+//   params: { boardID },
+// }: {
+//   params: { boardID: string };
+// }) {
+//   const supabase = createServerComponentClient({ cookies });
+//   const { data: board } = await supabase
+//     .from("boards")
+//     .select("*")
+//     .eq("id", boardID)
+//     .single();
 
-  return {
-    title: board.title,
-  };
-}
+//   return {
+//     title: board.title,
+//   };
+// }
 
 function processBoardData(
   boardData: BoardType,

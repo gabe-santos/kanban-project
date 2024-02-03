@@ -25,6 +25,8 @@ interface TaskType {
   id: string;
   title: string;
   column_id: string;
+  board_id: string;
+  user_id: string;
 }
 
 interface User {

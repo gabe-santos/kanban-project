@@ -1,25 +1,58 @@
-import { cookies } from "next/headers";
-import { login, signup } from "@/actions/login";
-import { createClient } from "@/utils/supabase/server";
-import { redirect } from "next/navigation";
+"use client";
 
-export default async function LoginPage() {
-  const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Inter } from "next/font/google";
+import { login } from "@/actions/auth";
+import { useToast } from "@/components/ui/use-toast";
+import AuthForm from "@/components/AuthForm";
+import BigHero from "@/components/BigHero";
 
-  const { data, error } = await supabase.auth.getUser();
-  if (data?.user) {
-    redirect("/");
-  }
+const interFont = Inter({ subsets: ["latin"] });
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string(),
+});
+
+export type LoginValues = z.infer<typeof loginSchema>;
+
+export default function LoginPage() {
+  const { toast } = useToast();
+
+  const form = useForm<z.infer<typeof loginSchema>>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleSubmit = async () => {
+    const res = await login(form.getValues());
+    if (res) {
+      toast({
+        title: "Oops!",
+        description: res.error.message,
+        variant: "destructive",
+      });
+    }
+    form.reset();
+  };
 
   return (
-    <form>
-      <label htmlFor="email">Email:</label>
-      <input id="email" name="email" type="email" required />
-      <label htmlFor="password">Password:</label>
-      <input id="password" name="password" type="password" required />
-      <button formAction={login}>Log in</button>
-      <button formAction={signup}>Sign up</button>
-    </form>
+    <div className="flex bg-black">
+      <BigHero message="welcome back!" className="w-1/2" />
+      <div className="flex h-screen w-1/2 items-center justify-center rounded-3xl bg-zinc-200">
+        <AuthForm
+          title="Login"
+          form={form}
+          useEmail
+          usePassword
+          handleSubmit={handleSubmit}
+        />
+      </div>
+    </div>
   );
 }

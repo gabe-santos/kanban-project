@@ -1,16 +1,17 @@
 import Logo from "@/components/Logo";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
-  const supabase = createServerComponentClient({ cookies });
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (session) {
+  if (user) {
     redirect("/app");
   }
 

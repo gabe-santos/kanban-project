@@ -9,6 +9,7 @@ import { CurrentBoardProvider } from "@/components/context/CurrentBoardContext";
 import BoardsList from "@/components/BoardsList";
 import { Suspense } from "react";
 import { BoardType } from "@/lib/types";
+import { redirect } from "next/navigation";
 
 const defaultBoards: BoardType[] = [
   {
@@ -27,6 +28,10 @@ export default async function MenuLayout({
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
 
   const boards: BoardType[] =
     boardData?.map((board) => ({

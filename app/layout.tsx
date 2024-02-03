@@ -1,4 +1,5 @@
 import { Bricolage_Grotesque } from "next/font/google";
+// import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 

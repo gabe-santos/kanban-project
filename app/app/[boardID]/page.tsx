@@ -44,6 +44,8 @@ function processBoardData(
     title: task.title,
     id: task.id,
     column_id: task.column_id,
+    user_id: task.user_id,
+    board_id: task.board_id,
   }));
 
   return { newBoard, newColumns, newTasks };

@@ -1,4 +1,4 @@
-import { ColumnType, TaskType } from "@/lib/types";
+import { ColumnType, TaskType } from "@/utils/types";
 import { SortableContext, useSortable } from "@dnd-kit/sortable";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Input } from "./ui/input";
@@ -7,28 +7,36 @@ import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
-import { deleteColumnHandler } from "@/actions/columns";
 
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
-  updateColumn?: (id: string, title: string) => void;
-  deleteColumn?: (id: string) => void;
-  addTask: (columnId: string, title: string) => void;
+  renameColumn: (id: string, title: string) => void;
+  deleteColumn: (id: ColumnType["id"]) => void;
+  createNewTask: (
+    columnId: ColumnType["id"],
+    title: ColumnType["title"],
+  ) => void;
+  renameTask: (id: TaskType["id"], title: TaskType["title"]) => void;
+  deleteTask: (id: TaskType["id"]) => void;
 }
 
 export default function ColumnContainer({
   column,
   tasks,
-  updateColumn,
+  renameColumn,
   deleteColumn,
-  addTask,
+  createNewTask,
+  renameTask,
+  deleteTask,
 }: ColumnContainerProps) {
   const tasksIds = useMemo(() => {
-    return tasks.map((task: TaskType) => task.id);
+    return tasks.map((task) => task.id);
   }, [tasks]);
 
-  const [columnTitle, setColumnTitle] = useState(column.title);
+  const [columnTitle, setColumnTitle] = useState<ColumnType["title"]>(
+    column.title,
+  );
   const [editMode, setEditMode] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -63,7 +71,7 @@ export default function ColumnContainer({
     transform: CSS.Transform.toString(transform),
   };
 
-  const sharedStyles = "h-[1000px] max-h-[1000px] w-[350px] rounded-sm";
+  const sharedStyles = "h-[800px] max-[800px] w-[350px] rounded-sm";
 
   if (isDragging) {
     return (
@@ -101,12 +109,12 @@ export default function ColumnContainer({
             {editMode && (
               <Input
                 ref={inputRef}
-                value={columnTitle}
+                value={columnTitle!}
                 autoFocus
                 onBlur={toggleEditMode}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter") return;
-                  updateColumn(column.id, columnTitle);
+                  renameColumn(column.id, columnTitle);
                   setEditMode(false);
                 }}
                 onChange={(e) => {
@@ -120,8 +128,7 @@ export default function ColumnContainer({
           <Button
             variant="outline"
             onClick={() => {
-              // deleteColumn(column.id);
-              deleteColumnHandler(column.id);
+              deleteColumn(column.id);
             }}
             type="submit"
             className="border-0 bg-white p-0 opacity-0 transition-opacity duration-0 hover:bg-white hover:opacity-100"
@@ -134,14 +141,21 @@ export default function ColumnContainer({
         <div className="flex flex-grow flex-col gap-4">
           <SortableContext items={tasksIds}>
             {tasks.map((task) => {
-              return <TaskCard key={task.id} task={task} />;
+              return (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  deleteTask={deleteTask}
+                  renameTask={renameTask}
+                />
+              );
             })}
           </SortableContext>
         </div>
       </div>
       <Button
         onClick={() => {
-          addTask(column.id, "New Task");
+          createNewTask(column.id, "New Task");
         }}
         variant="outline"
         className="rounded-b-sm rounded-t-none bg-white text-black opacity-30 transition-opacity duration-0 hover:bg-zinc-200 hover:opacity-100"

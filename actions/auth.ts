@@ -4,13 +4,13 @@ import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { createClient } from "@/utils/supabase/actions";
+import { supabaseActionsClient } from "@/utils/supabase/actions";
 import { LoginValues } from "@/app/login/page";
 import { SignupValues } from "@/app/signup/page";
 
 export async function login(formData: LoginValues) {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = supabaseActionsClient(cookieStore);
 
   const { error } = await supabase.auth.signInWithPassword({
     email: formData.email,
@@ -27,7 +27,7 @@ export async function login(formData: LoginValues) {
 
 export async function signup(formData: SignupValues) {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = supabaseActionsClient(cookieStore);
 
   console.log("signing up");
 

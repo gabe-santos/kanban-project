@@ -1,4 +1,4 @@
-import { BoardType } from "@/lib/types";
+import { BoardType } from "@/utils/types";
 import Link from "next/link";
 import MoreDropdown from "./MoreDropdown";
 

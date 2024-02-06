@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { ColumnState, ColumnActions, ColumnType } from "./types";
+import { ColumnState, ColumnActions, ColumnType } from "../utils/types";
 
 // export const useBoardStore = create<BoardState & BoardActions>()((set) => ({
 //   boards: [],

@@ -1,8 +1,17 @@
-import { BoardType, TaskType, ColumnType } from "@/lib/types";
+import { BoardType, TaskType, ColumnType } from "@/utils/types";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import UserBoard from "@/components/UserBoard";
 import { redirect } from "next/navigation";
+import { ReactQueryClientProvider } from "@/components/providers/ReactQueryClientProvider";
+import useSupabaseServer from "@/utils/supabase/server";
+import {
+  QueryClient,
+  dehydrate,
+  HydrationBoundary,
+} from "@tanstack/react-query";
+import { prefetchQuery } from "@supabase-cache-helpers/postgrest-react-query";
+import { getBoardById } from "@/lib/queries";
 
 // export async function generateMetadata({
 //   params: { boardID },
@@ -21,42 +30,14 @@ import { redirect } from "next/navigation";
 //   };
 // }
 
-function processBoardData(
-  boardData: BoardType,
-  columnsData: ColumnType[],
-  tasksData: TaskType[],
-) {
-  const newBoard: BoardType = {
-    title: boardData.title,
-    id: boardData.id,
-    user_id: boardData.user_id,
-  };
-
-  const newColumns: ColumnType[] = columnsData.map((column) => ({
-    id: column.id,
-    title: column.title,
-    board_id: column.board_id,
-    position: column.position,
-    user_id: column.user_id,
-  }));
-
-  const newTasks: TaskType[] = tasksData.map((task) => ({
-    title: task.title,
-    id: task.id,
-    column_id: task.column_id,
-    user_id: task.user_id,
-    board_id: task.board_id,
-  }));
-
-  return { newBoard, newColumns, newTasks };
-}
-
 export default async function BoardPage({
-  params: { boardID },
+  params: { boardId },
 }: {
-  params: { boardID: string };
+  params: { boardId: string };
 }) {
-  const supabase = createServerComponentClient({ cookies });
+  const queryClient = new QueryClient();
+  const cookieStore = cookies();
+  const supabase = useSupabaseServer(cookieStore);
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -66,42 +47,11 @@ export default async function BoardPage({
     redirect("/login");
   }
 
-  // TODO: Move these to api or separate file
-  const { data: boardData, error: boardError } = await supabase
-    .from("boards")
-    .select("*")
-    .eq("id", boardID)
-    .single();
-
-  const { data: columnsData, error: columnsError } = await supabase
-    .from("columns")
-    .select("*")
-    .eq("board_id", boardID);
-
-  const { data: tasksData, error: tasksError } = await supabase
-    .from("tasks")
-    .select("*")
-    .eq("board_id", boardID);
-
-  // Handle errors first with early returns
-  if (boardError || columnsError || tasksError) {
-    console.error(boardError || columnsError || tasksError);
-    const message =
-      boardError?.code === "404" ? "Board not found" : "Something went wrong";
-    return <h1>{message}</h1>;
-  }
-
-  const { newBoard, newColumns, newTasks } = processBoardData(
-    boardData,
-    columnsData,
-    tasksData,
-  );
+  await prefetchQuery(queryClient, getBoardById(supabase, boardId));
 
   return (
-    <UserBoard
-      boardData={newBoard}
-      columnsData={newColumns}
-      tasksData={newTasks}
-    />
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <UserBoard boardId={boardId} />
+    </HydrationBoundary>
   );
 }

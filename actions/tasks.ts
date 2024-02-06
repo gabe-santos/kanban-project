@@ -1,13 +1,13 @@
 "use server";
 
-import { createClient } from "@/utils/supabase/actions";
+import { supabaseActionsClient } from "@/utils/supabase/actions";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export const deleteTask = async (id: string, boardId: string) => {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = supabaseActionsClient(cookieStore);
 
   console.log("deleteTask", id);
 

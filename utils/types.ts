@@ -1,8 +1,9 @@
-export type BoardType = {
-  title: string;
-  id: string;
-  user_id: string;
-};
+import { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/utils/database.types";
+
+export type TypedSupabaseClient = SupabaseClient<Database>;
+
+export type BoardType = Database["public"]["Tables"]["boards"]["Row"];
 
 export type BoardActions = {
   addBoard: (board: BoardType) => void;
@@ -10,13 +11,7 @@ export type BoardActions = {
   updateBoard: (board: BoardType) => void;
 };
 
-export type ColumnType = {
-  title: string;
-  board_id: string;
-  id: string;
-  position: number;
-  user_id: string;
-};
+export type ColumnType = Database["public"]["Tables"]["columns"]["Row"];
 
 export type ColumnState = {
   columns: ColumnType[];
@@ -29,13 +24,7 @@ export type ColumnActions = {
   setColumns: (columns: ColumnType[]) => void;
 };
 
-export type TaskType = {
-  id: string;
-  title: string;
-  column_id: string;
-  board_id: string;
-  user_id: string;
-};
+export type TaskType = Database["public"]["Tables"]["tasks"]["Row"];
 
 export type TaskActions = {
   addTask: (task: TaskType) => void;

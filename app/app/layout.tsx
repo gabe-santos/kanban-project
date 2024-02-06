@@ -8,7 +8,7 @@ import Sidebar from "@/components/Sidebar";
 import { CurrentBoardProvider } from "@/context/CurrentBoardContext";
 import BoardsList from "@/components/BoardsList";
 import { Suspense } from "react";
-import { BoardType } from "@/lib/types";
+import { BoardType } from "@/utils/types";
 import { redirect } from "next/navigation";
 
 const defaultBoards: BoardType[] = [

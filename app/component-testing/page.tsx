@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useColumnStore } from "@/lib/store";
-import { ColumnType } from "@/lib/types";
+import { ColumnType } from "@/utils/types";
 import { generateUUID } from "@/lib/utils";
 import { PlusIcon } from "lucide-react";
 

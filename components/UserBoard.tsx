@@ -5,7 +5,7 @@ import {
   ColumnState,
   ColumnType,
   TaskType,
-} from "@/lib/types";
+} from "@/utils/types";
 import {
   DndContext,
   DragEndEvent,
@@ -18,54 +18,97 @@ import {
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
 import { useCurrentBoardContext } from "../context/CurrentBoardContext";
-import { use, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
-import { Button } from "./ui/button";
+import { AddColumnButton } from "./AddColumnButton";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { PlusIcon } from "lucide-react";
 import { generateUUID } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
-import { createClient } from "@/utils/supabase/client";
+import { useSupabaseBrowser } from "@/utils/supabase/client";
 import { createColumnHandler } from "@/actions/columns";
 
-interface UserBoardProps {
-  boardData: BoardType;
-  columnsData: ColumnType[];
-  tasksData: TaskType[];
-}
+import {
+  deleteColumnById,
+  deleteTaskById,
+  getBoardById,
+  getColumnsByBoardId,
+  getTasksByBoardId,
+  insertColumn,
+  insertTask,
+  updateColumnTitle,
+  updateTaskTitle,
+} from "@/lib/queries";
+import {
+  useDeleteMutation,
+  useInsertMutation,
+  useQuery,
+} from "@supabase-cache-helpers/postgrest-react-query";
 
-export default function UserBoard({
-  boardData,
-  columnsData,
-  tasksData,
-}: UserBoardProps) {
-  const supabase = createClient();
-  const { toast } = useToast();
-
-  const { setCurrentBoard } = useCurrentBoardContext();
-  setCurrentBoard(boardData);
-
-  const [tasks, setTasks] = useState<TaskType[]>(tasksData);
-  // const [columns, setColumns] = useState<ColumnType[]>(columnsData);
-
-  // const columnIndexes = useMemo(() => columns.map((col) => col.id), [columns]);
-
-  const columnIndexes = useMemo(
-    () => columnsData.map((col) => col.id),
-    [columnsData],
-  );
-
+export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
+  const [columns, setColumns] = useState<ColumnType[]>([]);
+  const [tasks, setTasks] = useState<TaskType[]>([]);
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
 
+  const { toast } = useToast();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 10,
+        distance: 5,
       },
     }),
   );
+
+  const supabase = useSupabaseBrowser();
+  const {
+    data: boardData,
+    isLoading: boardLoading,
+    isError: boardError,
+  } = useQuery(getBoardById(supabase!, boardId));
+
+  const {
+    data: columnsData,
+    isLoading: columnLoading,
+    isError: columnError,
+  } = useQuery(getColumnsByBoardId(supabase!, boardId));
+
+  const {
+    data: tasksData,
+    isLoading: taskLoading,
+    isError: taskError,
+  } = useQuery(getTasksByBoardId(supabase!, boardId));
+
+  useEffect(() => {
+    if (columnsData) {
+      setColumns(columnsData);
+    }
+    if (tasksData) {
+      setTasks(tasksData);
+    }
+  }, [columnsData, tasksData]);
+
+  if (boardLoading || columnLoading || taskLoading) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-green-700">
+        <div className="text-9xl">LOADING...</div>
+        <div className="text-4xl">
+          Replace me with a cool loading animation!
+        </div>
+      </div>
+    );
+  }
+
+  if (boardError || columnError || taskError) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center text-9xl">
+        Uh oh...
+      </div>
+    );
+  }
+
+  const columnIndexes = columns.map((col) => col.id);
 
   const onDragStart = (event: DragStartEvent) => {
     const { active } = event;
@@ -123,7 +166,6 @@ export default function UserBoard({
   const onDragEnd = (event: DragEndEvent) => {
     setActiveColumn(null);
     setActiveTask(null);
-    console.log(columnIndexes);
 
     const { active, over } = event;
     if (!over) return;
@@ -136,102 +178,129 @@ export default function UserBoard({
     const isActiveColumn = active.data.current?.type === "column";
     if (!isActiveColumn) return;
 
-    const activeColumnIndex = columnIndexes.findIndex(
-      (col) => col === activeId,
-    );
-    const overColumnIndex = columnIndexes.findIndex((col) => col === overId);
+    setColumns((columns) => {
+      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+      const overColumnIndex = columns.findIndex((col) => col.id === overId);
 
-    const arrMove = arrayMove(
-      columnIndexes,
-      activeColumnIndex,
-      overColumnIndex,
-    );
-
-    // setColumns(arrMove);
-
-    // setColumns((columns) => {
-    //   const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-    //   const overColumnIndex = columns.findIndex((col) => col.id === overId);
-
-    //   // TODO: use this to update position values in db and probably rename to index
-    //   console.log(activeColumnIndex, overColumnIndex);
-    //   return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    // });
+      // TODO: use this to update position values in db and probably rename to index
+      console.log(activeColumnIndex, overColumnIndex);
+      return arrayMove(columns, activeColumnIndex, overColumnIndex);
+    });
   };
 
-  // const createNewColumn = async () => {
-  //   const newColumn: ColumnType = {
-  //     id: generateUUID(),
-  //     title: "New Column",
-  //     position: 0,
-  //     board_id: boardData.id,
-  //     user_id: boardData.user_id,
-  //   };
+  const createNewColumn = async () => {
+    const newColumn: ColumnType = {
+      id: generateUUID(),
+      title: "New Column",
+      position: 0,
+      board_id: boardData!.id,
+      user_id: boardData!.user_id,
+      created_at: new Date().toISOString(),
+    };
 
-  //   const res = await supabase.from("columns").insert([newColumn]).select();
-  //   if (res.error) {
-  //     toast({ description: "Error creating column" });
-  //     return;
-  //   }
+    const { data, error } = await insertColumn(supabase, newColumn);
 
-  //   setColumns((columns) => [...columns, newColumn]);
-  // };
+    if (error) {
+      toast({ description: "Error creating column", variant: "destructive" });
+      return;
+    } else {
+      setColumns((columns) => [...columns, newColumn]);
+    }
+  };
 
-  // const updateColumn = async (id: string, title: string) => {
-  //   const { data, error } = await supabase
-  //     .from("columns")
-  //     .update({ title })
-  //     .eq("id", id)
-  //     .select();
-  //   if (error) {
-  //     toast({ description: "Error updating column" });
-  //     return;
-  //   } else {
-  //     toast({ description: "Column updated" });
-  //   }
+  const renameColumn = async (id: string, title: string) => {
+    const { data, error } = await updateColumnTitle(supabase, id, title);
 
-  //   const updatedColumns: ColumnType[] = columns.map((col) => {
-  //     if (col.id === id) {
-  //       return { ...col, title };
-  //     }
-  //     return col;
-  //   });
-  //   setColumns(updatedColumns);
-  // };
+    if (error) {
+      toast({ description: "Error updating column" });
+      return;
+    } else {
+      toast({ description: "Column updated" });
+    }
 
-  // const deleteColumn = async (id: string) => {
-  //   const { data, error } = await supabase
-  //     .from("columns")
-  //     .delete()
-  //     .eq("id", id)
-  //     .select();
-  //   if (error) {
-  //     toast({ description: "Error deleting column" });
-  //     return;
-  //   } else {
-  //     toast({ description: "Column deleted" });
-  //   }
+    const updatedColumns: ColumnType[] = columns.map((col) => {
+      if (col.id === id) {
+        return { ...col, title };
+      }
+      return col;
+    });
+    setColumns(updatedColumns);
+  };
 
-  //   const updatedColumns: ColumnType[] = columns.filter((col) => col.id !== id);
-  //   setColumns(updatedColumns);
-  // };
+  const deleteColumn = async (id: ColumnType["id"]) => {
+    const { data, error } = await deleteColumnById(supabase, id);
 
-  const addTask = async (columnId: string, title: string) => {
+    if (error) {
+      toast({ description: "Error deleting column" });
+      return;
+    } else {
+      toast({ description: "Column deleted" });
+
+      const updatedColumns: ColumnType[] = columns.filter(
+        (col) => col.id !== id,
+      );
+      setColumns(updatedColumns);
+    }
+  };
+
+  const createNewTask = async (
+    columnId: ColumnType["id"],
+    title: ColumnType["title"],
+  ) => {
     const newTask: TaskType = {
       id: generateUUID(),
       title,
       column_id: columnId,
-      user_id: boardData.user_id,
-      board_id: boardData.id,
+      board_id: boardId,
+      user_id: boardData!.user_id!,
+      created_at: new Date().toISOString(),
     };
 
-    const res = await supabase.from("tasks").insert([newTask]).select();
-    if (res.error) {
-      toast({ description: "Error creating task" });
+    const { data, error } = await insertTask(supabase, newTask);
+
+    if (error) {
+      toast({ description: "Error creating task", variant: "destructive" });
       return;
+    } else {
+      setTasks((tasks) => [...tasks, newTask]);
+    }
+  };
+
+  const renameTask = async (id: TaskType["id"], title: TaskType["title"]) => {
+    const taskToUpdate = tasks.find((task) => task.id === id);
+    if (!taskToUpdate) return;
+
+    console.log("renaming task from userboard with id ", id, title);
+
+    const { data, error } = await updateTaskTitle(supabase, id, title!);
+
+    if (error) {
+      toast({ description: error.message });
+      return;
+    } else {
+      toast({ description: "Task updated" });
     }
 
-    setTasks((tasks) => [...tasks, newTask]);
+    const updatedTasks: TaskType[] = tasks.map((task) => {
+      if (task.id === id) {
+        return { ...task, title };
+      }
+      return task;
+    });
+    setTasks(updatedTasks);
+  };
+
+  const deleteTask = async (id: TaskType["id"]) => {
+    const { data, error } = await deleteTaskById(supabase, id);
+
+    if (error) {
+      toast({ description: "Error deleting task" });
+      return;
+    } else {
+      toast({ description: `'${data.title}' was deleted` });
+      const updatedTasks: TaskType[] = tasks.filter((task) => task.id !== id);
+      setTasks(updatedTasks);
+    }
   };
 
   return (
@@ -244,21 +313,21 @@ export default function UserBoard({
       >
         <div className="flex gap-4">
           <SortableContext items={columnIndexes}>
-            {columnsData.map((c) => (
+            {columnLoading && <div>Loading column...</div>}
+            {columns.map((c) => (
               <ColumnContainer
                 column={c}
                 key={c.id}
-                tasks={tasks.filter((tasks) => tasks.column_id === c.id)}
-                // updateColumn={updateColumn}
-                // deleteColumn={deleteColumn}
-                addTask={addTask}
+                tasks={tasks.filter((t) => t.column_id === c.id)}
+                renameColumn={renameColumn}
+                deleteColumn={deleteColumn}
+                createNewTask={createNewTask}
+                renameTask={renameTask}
+                deleteTask={deleteTask}
               />
             ))}
           </SortableContext>
-          <AddColumnButton
-            board_id={boardData.id}
-            user_id={boardData.user_id}
-          />
+          <AddColumnButton onClick={createNewColumn} />
         </div>
 
         {typeof window === "object" &&
@@ -270,12 +339,20 @@ export default function UserBoard({
                   tasks={tasks.filter(
                     (task) => task.column_id === activeColumn.id,
                   )}
-                  // updateColumn={updateColumn}
-                  // deleteColumn={deleteColumn}
-                  addTask={addTask}
+                  renameColumn={renameColumn}
+                  deleteColumn={deleteColumn}
+                  createNewTask={createNewTask}
+                  renameTask={renameTask}
+                  deleteTask={deleteTask}
                 />
               )}
-              {activeTask && <TaskCard task={activeTask} />}
+              {activeTask && (
+                <TaskCard
+                  task={activeTask}
+                  deleteTask={deleteTask}
+                  renameTask={renameTask}
+                />
+              )}
             </DragOverlay>,
             document.body,
           )}
@@ -283,36 +360,3 @@ export default function UserBoard({
     </div>
   );
 }
-
-const AddColumnButton = ({
-  board_id,
-  user_id,
-}: {
-  board_id: string;
-  user_id: string;
-}) => {
-  const supabase = createClient();
-
-  const handleAddColumn = async () => {
-    const newColumn: ColumnType = {
-      id: generateUUID(),
-      title: "New Column",
-      position: 0,
-      board_id: board_id,
-      user_id: user_id,
-    };
-
-    createColumnHandler(newColumn);
-  };
-
-  return (
-    <Button
-      variant="outline"
-      onClick={handleAddColumn}
-      className="flex h-[60px] w-[350px] min-w-[350px] cursor-pointer justify-start gap-2 border-2 border-zinc-400 p-4 hover:border-black"
-    >
-      <PlusIcon />
-      Add Column
-    </Button>
-  );
-};

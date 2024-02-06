@@ -1,12 +1,12 @@
 import Logo from "@/components/Logo";
-import { createClient } from "@/utils/supabase/server";
+import useSupabaseServer from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function Home() {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = useSupabaseServer(cookieStore);
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -1,14 +1,14 @@
 "use server";
 
 import { NextApiRequest, NextApiResponse } from "next";
-import { createClient } from "@/utils/supabase/actions";
+import { supabaseActionsClient } from "@/utils/supabase/actions";
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { ColumnType } from "@/lib/types";
+import { ColumnType } from "@/utils/types";
 
 export async function deleteColumnHandler(id: string) {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = supabaseActionsClient(cookieStore);
 
   const { data, error } = await supabase
     .from("columns")
@@ -44,7 +44,7 @@ export async function deleteColumnHandler(id: string) {
 
 export async function createColumnHandler(column: ColumnType) {
   const cookieStore = cookies();
-  const supabase = createClient(cookieStore);
+  const supabase = supabaseActionsClient(cookieStore);
 
   const { data, error } = await supabase
     .from("columns")

@@ -7,13 +7,13 @@ import TaskCard from "./TaskCard";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import { Plus, X } from "lucide-react";
-import deleteColumnHandler from "@/actions/columns";
+import { deleteColumnHandler } from "@/actions/columns";
 
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
-  updateColumn: (id: string, title: string) => void;
-  deleteColumn: (id: string) => void;
+  updateColumn?: (id: string, title: string) => void;
+  deleteColumn?: (id: string) => void;
   addTask: (columnId: string, title: string) => void;
 }
 
@@ -116,12 +116,14 @@ export default function ColumnContainer({
               />
             )}
           </div>
+
           <Button
             variant="outline"
             onClick={() => {
               // deleteColumn(column.id);
               deleteColumnHandler(column.id);
             }}
+            type="submit"
             className="border-0 bg-white p-0 opacity-0 transition-opacity duration-0 hover:bg-white hover:opacity-100"
           >
             <X />

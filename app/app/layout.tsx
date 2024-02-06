@@ -5,7 +5,7 @@ import Login from "../login";
 import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
 import Sidebar from "@/components/Sidebar";
-import { CurrentBoardProvider } from "@/components/context/CurrentBoardContext";
+import { CurrentBoardProvider } from "@/context/CurrentBoardContext";
 import BoardsList from "@/components/BoardsList";
 import { Suspense } from "react";
 import { BoardType } from "@/lib/types";

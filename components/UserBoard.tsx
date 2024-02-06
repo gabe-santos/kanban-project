@@ -1,5 +1,11 @@
 "use client";
-import { BoardType, ColumnType, TaskType } from "@/lib/types";
+import {
+  BoardType,
+  ColumnActions,
+  ColumnState,
+  ColumnType,
+  TaskType,
+} from "@/lib/types";
 import {
   DndContext,
   DragEndEvent,
@@ -11,8 +17,8 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useCurrentBoardContext } from "./context/CurrentBoardContext";
-import { useMemo, useState } from "react";
+import { useCurrentBoardContext } from "../context/CurrentBoardContext";
+import { use, useMemo, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import { Button } from "./ui/button";
 import { createPortal } from "react-dom";
@@ -21,6 +27,7 @@ import { PlusIcon } from "lucide-react";
 import { generateUUID } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
 import { createClient } from "@/utils/supabase/client";
+import { createColumnHandler } from "@/actions/columns";
 
 interface UserBoardProps {
   boardData: BoardType;
@@ -38,13 +45,16 @@ export default function UserBoard({
 
   const { setCurrentBoard } = useCurrentBoardContext();
   setCurrentBoard(boardData);
+
+  const [tasks, setTasks] = useState<TaskType[]>(tasksData);
+  // const [columns, setColumns] = useState<ColumnType[]>(columnsData);
+
+  // const columnIndexes = useMemo(() => columns.map((col) => col.id), [columns]);
+
   const columnIndexes = useMemo(
     () => columnsData.map((col) => col.id),
     [columnsData],
   );
-
-  const [tasks, setTasks] = useState<TaskType[]>(tasksData);
-  const [columns, setColumns] = useState<ColumnType[]>(columnsData);
 
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
@@ -126,72 +136,85 @@ export default function UserBoard({
     const isActiveColumn = active.data.current?.type === "column";
     if (!isActiveColumn) return;
 
-    setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-      const overColumnIndex = columns.findIndex((col) => col.id === overId);
+    const activeColumnIndex = columnIndexes.findIndex(
+      (col) => col === activeId,
+    );
+    const overColumnIndex = columnIndexes.findIndex((col) => col === overId);
 
-      // TODO: use this to update position values in db and probably rename to index
-      console.log(activeColumnIndex, overColumnIndex);
-      return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    });
+    const arrMove = arrayMove(
+      columnIndexes,
+      activeColumnIndex,
+      overColumnIndex,
+    );
+
+    // setColumns(arrMove);
+
+    // setColumns((columns) => {
+    //   const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+    //   const overColumnIndex = columns.findIndex((col) => col.id === overId);
+
+    //   // TODO: use this to update position values in db and probably rename to index
+    //   console.log(activeColumnIndex, overColumnIndex);
+    //   return arrayMove(columns, activeColumnIndex, overColumnIndex);
+    // });
   };
 
-  const createNewColumn = async () => {
-    const newColumn: ColumnType = {
-      id: generateUUID(),
-      title: "New Column",
-      position: 0,
-      board_id: boardData.id,
-      user_id: boardData.user_id,
-    };
+  // const createNewColumn = async () => {
+  //   const newColumn: ColumnType = {
+  //     id: generateUUID(),
+  //     title: "New Column",
+  //     position: 0,
+  //     board_id: boardData.id,
+  //     user_id: boardData.user_id,
+  //   };
 
-    const res = await supabase.from("columns").insert([newColumn]).select();
-    if (res.error) {
-      toast({ description: "Error creating column" });
-      return;
-    }
+  //   const res = await supabase.from("columns").insert([newColumn]).select();
+  //   if (res.error) {
+  //     toast({ description: "Error creating column" });
+  //     return;
+  //   }
 
-    setColumns((columns) => [...columns, newColumn]);
-  };
+  //   setColumns((columns) => [...columns, newColumn]);
+  // };
 
-  const updateColumn = async (id: string, title: string) => {
-    const { data, error } = await supabase
-      .from("columns")
-      .update({ title })
-      .eq("id", id)
-      .select();
-    if (error) {
-      toast({ description: "Error updating column" });
-      return;
-    } else {
-      toast({ description: "Column updated" });
-    }
+  // const updateColumn = async (id: string, title: string) => {
+  //   const { data, error } = await supabase
+  //     .from("columns")
+  //     .update({ title })
+  //     .eq("id", id)
+  //     .select();
+  //   if (error) {
+  //     toast({ description: "Error updating column" });
+  //     return;
+  //   } else {
+  //     toast({ description: "Column updated" });
+  //   }
 
-    const updatedColumns: ColumnType[] = columns.map((col) => {
-      if (col.id === id) {
-        return { ...col, title };
-      }
-      return col;
-    });
-    setColumns(updatedColumns);
-  };
+  //   const updatedColumns: ColumnType[] = columns.map((col) => {
+  //     if (col.id === id) {
+  //       return { ...col, title };
+  //     }
+  //     return col;
+  //   });
+  //   setColumns(updatedColumns);
+  // };
 
-  const deleteColumn = async (id: string) => {
-    const { data, error } = await supabase
-      .from("columns")
-      .delete()
-      .eq("id", id)
-      .select();
-    if (error) {
-      toast({ description: "Error deleting column" });
-      return;
-    } else {
-      toast({ description: "Column deleted" });
-    }
+  // const deleteColumn = async (id: string) => {
+  //   const { data, error } = await supabase
+  //     .from("columns")
+  //     .delete()
+  //     .eq("id", id)
+  //     .select();
+  //   if (error) {
+  //     toast({ description: "Error deleting column" });
+  //     return;
+  //   } else {
+  //     toast({ description: "Column deleted" });
+  //   }
 
-    const updatedColumns: ColumnType[] = columns.filter((col) => col.id !== id);
-    setColumns(updatedColumns);
-  };
+  //   const updatedColumns: ColumnType[] = columns.filter((col) => col.id !== id);
+  //   setColumns(updatedColumns);
+  // };
 
   const addTask = async (columnId: string, title: string) => {
     const newTask: TaskType = {
@@ -221,18 +244,21 @@ export default function UserBoard({
       >
         <div className="flex gap-4">
           <SortableContext items={columnIndexes}>
-            {columns.map((c) => (
+            {columnsData.map((c) => (
               <ColumnContainer
                 column={c}
                 key={c.id}
                 tasks={tasks.filter((tasks) => tasks.column_id === c.id)}
-                updateColumn={updateColumn}
-                deleteColumn={deleteColumn}
+                // updateColumn={updateColumn}
+                // deleteColumn={deleteColumn}
                 addTask={addTask}
               />
             ))}
           </SortableContext>
-          <AddColumnButton onClick={createNewColumn} />
+          <AddColumnButton
+            board_id={boardData.id}
+            user_id={boardData.user_id}
+          />
         </div>
 
         {typeof window === "object" &&
@@ -244,8 +270,8 @@ export default function UserBoard({
                   tasks={tasks.filter(
                     (task) => task.column_id === activeColumn.id,
                   )}
-                  updateColumn={updateColumn}
-                  deleteColumn={deleteColumn}
+                  // updateColumn={updateColumn}
+                  // deleteColumn={deleteColumn}
                   addTask={addTask}
                 />
               )}
@@ -258,11 +284,31 @@ export default function UserBoard({
   );
 }
 
-const AddColumnButton = ({ onClick }: { onClick: () => void }) => {
+const AddColumnButton = ({
+  board_id,
+  user_id,
+}: {
+  board_id: string;
+  user_id: string;
+}) => {
+  const supabase = createClient();
+
+  const handleAddColumn = async () => {
+    const newColumn: ColumnType = {
+      id: generateUUID(),
+      title: "New Column",
+      position: 0,
+      board_id: board_id,
+      user_id: user_id,
+    };
+
+    createColumnHandler(newColumn);
+  };
+
   return (
     <Button
       variant="outline"
-      onClick={onClick}
+      onClick={handleAddColumn}
       className="flex h-[60px] w-[350px] min-w-[350px] cursor-pointer justify-start gap-2 border-2 border-zinc-400 p-4 hover:border-black"
     >
       <PlusIcon />

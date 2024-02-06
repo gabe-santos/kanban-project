@@ -1,6 +1,6 @@
 "use client";
 
-import { useCurrentBoardContext } from "./context/CurrentBoardContext";
+import { useCurrentBoardContext } from "../context/CurrentBoardContext";
 
 export default function CurrentBoardName() {
   const { currentBoard } = useCurrentBoardContext();

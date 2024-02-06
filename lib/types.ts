@@ -1,19 +1,16 @@
-type BoardType = {
+export type BoardType = {
   title: string;
   id: string;
   user_id: string;
 };
 
-type BoardContext = {
-  boards: BoardType[];
-  setBoards: (boards: BoardType[]) => void;
-  currentBoard: BoardType;
-  setCurrentBoard: (board: BoardType) => void;
-  columns: ColumnType[];
-  setColumns: (columns: ColumnType[]) => void;
+export type BoardActions = {
+  addBoard: (board: BoardType) => void;
+  deleteBoard: (id: string) => void;
+  updateBoard: (board: BoardType) => void;
 };
 
-type ColumnType = {
+export type ColumnType = {
   title: string;
   board_id: string;
   id: string;
@@ -21,17 +18,32 @@ type ColumnType = {
   user_id: string;
 };
 
-interface TaskType {
+export type ColumnState = {
+  columns: ColumnType[];
+};
+
+export type ColumnActions = {
+  addColumn: (column: ColumnType) => void;
+  deleteColumn: (id: string) => void;
+  updateColumn: (column: ColumnType) => void;
+  setColumns: (columns: ColumnType[]) => void;
+};
+
+export type TaskType = {
   id: string;
   title: string;
   column_id: string;
   board_id: string;
   user_id: string;
-}
+};
 
-interface User {
+export type TaskActions = {
+  addTask: (task: TaskType) => void;
+  deleteTask: (id: string) => void;
+  updateTask: (task: TaskType) => void;
+};
+
+export type User = {
   email: string;
   password: string;
-}
-
-export type { BoardType, BoardContext, ColumnType, TaskType, User };
+};

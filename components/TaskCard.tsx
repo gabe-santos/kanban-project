@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "./ui/button";
+import { deleteTask } from "@/actions/tasks";
 
 interface TaskCardProps {
   task: TaskType;
@@ -53,6 +54,10 @@ export default function TaskCard({ task }: TaskCardProps) {
     console.log("color changed");
   };
 
+  const handleDeleteTask = async () => {
+    const res = await deleteTask(task.id, task.board_id);
+  };
+
   return (
     <Card
       ref={setNodeRef}
@@ -62,12 +67,10 @@ export default function TaskCard({ task }: TaskCardProps) {
       className={`flex h-[200px] cursor-grab flex-col justify-between border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
     >
       <CardContent className="p-4 text-2xl">{task.title}</CardContent>
-      <Button
-        onClick={() => changeColor()}
-        className="opacity-0 hover:opacity-100"
-      >
+      <Button onClick={changeColor} className="opacity-0 hover:opacity-100">
         change color
       </Button>
+      <Button onClick={handleDeleteTask}>Test Delete</Button>
     </Card>
   );
 }

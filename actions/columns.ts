@@ -3,11 +3,19 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@/utils/supabase/actions";
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
+import { ColumnType } from "@/lib/types";
 
-const cookieStore = cookies();
-const supabase = createClient(cookieStore);
+export async function deleteColumnHandler(id: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
 
-export default async function deleteColumnHandler(id: string) {
+  const { data, error } = await supabase
+    .from("columns")
+    .delete()
+    .eq("id", id)
+    .select();
+
   console.log("deleteColumnHandler", id);
   // const { id } = req.body;
 
@@ -30,5 +38,20 @@ export default async function deleteColumnHandler(id: string) {
   // } catch (error) {
   //   res.status(500).json({ error: error.message });
   // }
-  return { message: "Column deleted", columns: [] };
+  // return { message: "Column deleted", columns: [] };
+  revalidatePath("/app/app/[boardID]", "page");
+}
+
+export async function createColumnHandler(column: ColumnType) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const { data, error } = await supabase
+    .from("columns")
+    .insert(column)
+    .select();
+
+  console.log("createColumnHandler", column);
+
+  revalidatePath("/app/app/[boardID]", "page");
 }

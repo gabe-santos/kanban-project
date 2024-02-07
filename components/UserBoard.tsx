@@ -23,7 +23,6 @@ import ColumnContainer from "./ColumnContainer";
 import { AddColumnButton } from "./AddColumnButton";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { PlusIcon } from "lucide-react";
 import { generateUUID } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
 import { useSupabaseBrowser } from "@/utils/supabase/client";
@@ -37,6 +36,7 @@ import {
   getTasksByBoardId,
   insertColumn,
   insertTask,
+  updateColumnIndexes,
   updateColumnTitle,
   updateTaskTitle,
 } from "@/lib/queries";
@@ -44,7 +44,9 @@ import {
   useDeleteMutation,
   useInsertMutation,
   useQuery,
+  useUpdateMutation,
 } from "@supabase-cache-helpers/postgrest-react-query";
+import { useMutation } from "@tanstack/react-query";
 
 export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const [columns, setColumns] = useState<ColumnType[]>([]);
@@ -163,36 +165,39 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     }
   };
 
-  const onDragEnd = (event: DragEndEvent) => {
+  const onDragEnd = async (event: DragEndEvent) => {
     setActiveColumn(null);
     setActiveTask(null);
 
     const { active, over } = event;
-    if (!over) return;
+    if (!over || active.id === over.id) return;
 
     const activeId = active.id;
     const overId = over.id;
 
-    if (activeId === overId) return;
+    const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
+    const overColumnIndex = columns.findIndex((col) => col.id === overId);
 
-    const isActiveColumn = active.data.current?.type === "column";
-    if (!isActiveColumn) return;
+    if (activeColumnIndex === overColumnIndex) return;
 
-    setColumns((columns) => {
-      const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-      const overColumnIndex = columns.findIndex((col) => col.id === overId);
+    // Reorder columns in state
+    const newColumns: ColumnType[] = arrayMove(
+      columns,
+      activeColumnIndex,
+      overColumnIndex,
+    );
+    console.log("new columns: ", newColumns);
+    setColumns(newColumns.map((col, index) => ({ ...col, index })));
 
-      // TODO: use this to update position values in db and probably rename to index
-      console.log(activeColumnIndex, overColumnIndex);
-      return arrayMove(columns, activeColumnIndex, overColumnIndex);
-    });
+    // Update column indexes in the database
+    await updateColumnIndexes(supabase, newColumns);
   };
 
   const createNewColumn = async () => {
     const newColumn: ColumnType = {
       id: generateUUID(),
       title: "New Column",
-      position: 0,
+      index: columns.length,
       board_id: boardData!.id,
       user_id: boardData!.user_id,
       created_at: new Date().toISOString(),
@@ -204,6 +209,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       toast({ description: "Error creating column", variant: "destructive" });
       return;
     } else {
+      console.log("new column: ", newColumn);
       setColumns((columns) => [...columns, newColumn]);
     }
   };
@@ -249,7 +255,8 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   ) => {
     const newTask: TaskType = {
       id: generateUUID(),
-      title,
+      index: 0,
+      title: title,
       column_id: columnId,
       board_id: boardId,
       user_id: boardData!.user_id!,
@@ -305,6 +312,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
   return (
     <div className="flex min-h-full w-full overflow-x-auto overflow-y-hidden p-10">
+      {columns.length}
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}

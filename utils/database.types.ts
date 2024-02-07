@@ -44,7 +44,7 @@ export type Database = {
           board_id: string
           created_at: string
           id: string
-          position: number
+          index: number
           title: string
           user_id: string | null
         }
@@ -52,7 +52,7 @@ export type Database = {
           board_id: string
           created_at?: string
           id?: string
-          position: number
+          index: number
           title: string
           user_id?: string | null
         }
@@ -60,7 +60,7 @@ export type Database = {
           board_id?: string
           created_at?: string
           id?: string
-          position?: number
+          index?: number
           title?: string
           user_id?: string | null
         }
@@ -87,6 +87,7 @@ export type Database = {
           column_id: string
           created_at: string
           id: string
+          index: number
           title: string
           user_id: string
         }
@@ -95,6 +96,7 @@ export type Database = {
           column_id: string
           created_at?: string
           id?: string
+          index: number
           title: string
           user_id: string
         }
@@ -103,6 +105,7 @@ export type Database = {
           column_id?: string
           created_at?: string
           id?: string
+          index?: number
           title?: string
           user_id?: string
         }

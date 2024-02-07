@@ -139,6 +139,7 @@ export default function ColumnContainer({
 
         {/* CONTENT */}
         <div className="flex flex-grow flex-col gap-4">
+          <div className="text-red-600">{column.index}</div>
           <SortableContext items={tasksIds}>
             {tasks.map((task) => {
               return (

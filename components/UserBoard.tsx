@@ -29,24 +29,21 @@ import { useSupabaseBrowser } from "@/utils/supabase/client";
 import { createColumnHandler } from "@/actions/columns";
 
 import {
-  deleteColumnById,
-  deleteTaskById,
-  getBoardById,
-  getColumnsByBoardId,
-  getTasksByBoardId,
-  insertColumn,
-  insertTask,
-  updateColumnIndexes,
-  updateColumnTitle,
-  updateTaskTitle,
-} from "@/lib/queries";
-import {
   useDeleteMutation,
   useInsertMutation,
-  useQuery,
   useUpdateMutation,
 } from "@supabase-cache-helpers/postgrest-react-query";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  updateColumnIndexes,
+  insertColumn,
+  updateColumnTitle,
+  deleteColumnById,
+} from "@/queries/columns";
+import { insertTask, updateTaskTitle, deleteTaskById } from "@/queries/tasks";
+import useBoardQuery from "@/hooks/use-board-query";
+import useColumnsQuery from "@/hooks/use-columns-query";
+import useTasksQuery from "@/hooks/use-tasks-query";
 
 export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const [columns, setColumns] = useState<ColumnType[]>([]);
@@ -64,23 +61,24 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   );
 
   const supabase = useSupabaseBrowser();
+  const queryClient = useQueryClient();
   const {
     data: boardData,
     isLoading: boardLoading,
     isError: boardError,
-  } = useQuery(getBoardById(supabase!, boardId));
+  } = useBoardQuery(boardId);
 
   const {
     data: columnsData,
-    isLoading: columnLoading,
-    isError: columnError,
-  } = useQuery(getColumnsByBoardId(supabase!, boardId));
+    isLoading: columnsLoading,
+    isError: columnsError,
+  } = useColumnsQuery(boardId);
 
   const {
     data: tasksData,
     isLoading: taskLoading,
     isError: taskError,
-  } = useQuery(getTasksByBoardId(supabase!, boardId));
+  } = useTasksQuery(boardId);
 
   useEffect(() => {
     if (columnsData) {
@@ -91,7 +89,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     }
   }, [columnsData, tasksData]);
 
-  if (boardLoading || columnLoading || taskLoading) {
+  if (boardLoading || columnsLoading || taskLoading) {
     return (
       <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-green-700">
         <div className="text-9xl">LOADING...</div>
@@ -102,7 +100,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     );
   }
 
-  if (boardError || columnError || taskError) {
+  if (boardError || columnsError || taskError) {
     return (
       <div className="flex h-screen w-full items-center justify-center text-9xl">
         Uh oh...
@@ -321,7 +319,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       >
         <div className="flex gap-4">
           <SortableContext items={columnIndexes}>
-            {columnLoading && <div>Loading column...</div>}
+            {columnsLoading && <div>Loading column...</div>}
             {columns.map((c) => (
               <ColumnContainer
                 column={c}

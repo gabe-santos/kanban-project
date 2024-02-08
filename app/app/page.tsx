@@ -1,6 +1,7 @@
 import BoardCard from "@/components/BoardCard";
 import NewBoardDialogForm from "@/components/NewBoardDialogForm";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
+import { getAllBoards } from "@/queries/boards";
+import useSupabaseServer from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -9,7 +10,8 @@ export const metadata = {
 };
 
 export default async function Menu() {
-  const supabase = createServerComponentClient({ cookies });
+  const cookieStore = cookies();
+  const supabase = useSupabaseServer(cookieStore);
   const {
     data: { session },
   } = await supabase.auth.getSession();
@@ -18,11 +20,9 @@ export default async function Menu() {
     redirect("/login");
   }
 
-  const { data: boardData, error: boardError } = await supabase
-    .from("boards")
-    .select("*");
+  const { data: boardData, error: boardError } = await getAllBoards(supabase);
 
-  if (boardError) {
+  if (!boardData || boardError) {
     return <div>Error loading boards</div>;
   }
 

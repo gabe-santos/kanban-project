@@ -10,8 +10,9 @@ import {
   dehydrate,
   HydrationBoundary,
 } from "@tanstack/react-query";
-import { prefetchQuery } from "@supabase-cache-helpers/postgrest-react-query";
-import { getBoardById } from "@/lib/queries";
+import { getBoardById } from "@/queries/boards";
+import { getColumnsByBoardId } from "@/queries/columns";
+import { getTasksByBoardId } from "@/queries/tasks";
 
 // export async function generateMetadata({
 //   params: { boardID },
@@ -47,7 +48,20 @@ export default async function BoardPage({
     redirect("/login");
   }
 
-  await prefetchQuery(queryClient, getBoardById(supabase, boardId));
+  await queryClient.prefetchQuery({
+    queryKey: ["boardData"],
+    queryFn: () => getBoardById(supabase, boardId),
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ["columnsData"],
+    queryFn: () => getColumnsByBoardId(supabase, boardId),
+  });
+
+  await queryClient.prefetchQuery({
+    queryKey: ["tasksData"],
+    queryFn: () => getTasksByBoardId(supabase, boardId),
+  });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>

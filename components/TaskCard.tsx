@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardTitle } from "./ui/card";
 import { CSS } from "@dnd-kit/utilities";
 import { Button } from "./ui/button";
 import { Database } from "@/utils/database.types";
-import { deleteTaskById } from "@/lib/queries";
+import { deleteTaskById } from "@/queries/tasks";
 import { useSupabaseBrowser } from "@/utils/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { Input } from "./ui/input";

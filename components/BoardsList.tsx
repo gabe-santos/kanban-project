@@ -14,7 +14,7 @@ export default function BoardsList({ boards }: { boards: BoardType[] }) {
         >
           <Link
             href={`/app/${b.id}`}
-            className="text-overflow-ellipsis flex-1 overflow-hidden whitespace-nowrap hover:underline"
+            className="text-overflow-ellipsis after:ease-[cubic-bezier(0.65_0.05_0.36_1)] relative flex-1 overflow-hidden whitespace-nowrap after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-neutral-800 after:transition-transform after:duration-300 hover:after:origin-bottom-left hover:after:scale-x-100"
           >
             {b.title}
           </Link>

@@ -11,7 +11,7 @@ import { Plus, X } from "lucide-react";
 interface ColumnContainerProps {
   column: ColumnType;
   tasks: TaskType[];
-  renameColumn: (id: string, title: string) => void;
+  renameColumn: (id: ColumnType["id"], title: ColumnType["title"]) => void;
   deleteColumn: (id: ColumnType["id"]) => void;
   createNewTask: (
     columnId: ColumnType["id"],
@@ -25,8 +25,8 @@ export default function ColumnContainer({
   column,
   tasks,
   renameColumn,
-  deleteColumn,
   createNewTask,
+  deleteColumn,
   renameTask,
   deleteTask,
 }: ColumnContainerProps) {

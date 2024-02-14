@@ -1,11 +1,5 @@
 "use client";
-import {
-  BoardType,
-  ColumnActions,
-  ColumnState,
-  ColumnType,
-  TaskType,
-} from "@/utils/types";
+import { BoardType, ColumnType, TaskType } from "@/utils/types";
 import {
   DndContext,
   DragEndEvent,
@@ -17,33 +11,26 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { useCurrentBoardContext } from "../context/CurrentBoardContext";
 import { Suspense, useEffect, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import { AddColumnButton } from "./AddColumnButton";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { generateUUID } from "@/lib/utils";
-import { useToast } from "./ui/use-toast";
 import { useSupabaseBrowser } from "@/utils/supabase/client";
-import { createColumnHandler } from "@/actions/columns";
 
-import {
-  useDeleteMutation,
-  useInsertMutation,
-  useUpdateMutation,
-} from "@supabase-cache-helpers/postgrest-react-query";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import {
-  updateColumnIndexes,
-  insertColumn,
-  updateColumnTitle,
-  deleteColumnById,
-} from "@/queries/columns";
-import { insertTask, updateTaskTitle, deleteTaskById } from "@/queries/tasks";
+import { useQueryClient } from "@tanstack/react-query";
+
 import useBoardQuery from "@/hooks/use-board-query";
 import useColumnsQuery from "@/hooks/use-columns-query";
 import useTasksQuery from "@/hooks/use-tasks-query";
+import useInsertColumnMutation from "@/hooks/use-insert-column-mutation";
+import useDeleteColumnMutation from "@/hooks/use-delete-column-mutation";
+import useUpdateColumnTitleMutation from "@/hooks/use-update-column-title-mutation";
+import useUpdateColumnIndexesMutation from "@/hooks/use-update-column-indexes-mutation";
+import useInsertTaskMutation from "@/hooks/use-insert-task-mutation";
+import useUpdateTaskTitleMutation from "@/hooks/use-update-task-title-mutation";
+import useDeleteTaskMutation from "@/hooks/use-delete-task-mutation";
 
 export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const [columns, setColumns] = useState<ColumnType[]>([]);
@@ -51,7 +38,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
 
-  const { toast } = useToast();
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -78,7 +64,18 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     data: tasksData,
     isLoading: taskLoading,
     isError: taskError,
+    isSuccess: taskSuccess,
   } = useTasksQuery(boardId);
+
+  const { mutate: insertColumn } = useInsertColumnMutation(supabase);
+  const { mutate: deleteColumn } = useDeleteColumnMutation(supabase);
+  const { mutate: updateColumnTitle } = useUpdateColumnTitleMutation(supabase);
+  const { mutate: updateColumnIndexes } =
+    useUpdateColumnIndexesMutation(supabase);
+
+  const { mutate: insertTask } = useInsertTaskMutation(supabase);
+  const { mutate: updateTaskTitle } = useUpdateTaskTitleMutation(supabase);
+  const { mutate: deleteTask } = useDeleteTaskMutation(supabase);
 
   useEffect(() => {
     if (columnsData) {
@@ -100,7 +97,14 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     );
   }
 
-  if (boardError || columnsError || taskError) {
+  if (
+    !boardData ||
+    !columns ||
+    !tasks ||
+    boardError ||
+    columnsError ||
+    taskError
+  ) {
     return (
       <div className="flex h-screen w-full items-center justify-center text-9xl">
         Uh oh...
@@ -132,7 +136,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
     if (activeId === overId) return;
 
-    // TODO: rename variables
     const isActiveTask = active.data.current?.type === "task";
     const isOverATask = over.data.current?.type === "task";
 
@@ -158,6 +161,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
 
         tasks[activeIndex].column_id = overId.toString();
+
         return arrayMove(tasks, activeIndex, activeIndex);
       });
     }
@@ -184,14 +188,14 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       activeColumnIndex,
       overColumnIndex,
     );
-    console.log("new columns: ", newColumns);
+
     setColumns(newColumns.map((col, index) => ({ ...col, index })));
 
     // Update column indexes in the database
-    await updateColumnIndexes(supabase, newColumns);
+    await updateColumnIndexes({ newColumns });
   };
 
-  const createNewColumn = async () => {
+  const createColumnHandler = () => {
     const newColumn: ColumnType = {
       id: generateUUID(),
       title: "New Column",
@@ -201,53 +205,28 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       created_at: new Date().toISOString(),
     };
 
-    const { data, error } = await insertColumn(supabase, newColumn);
-
-    if (error) {
-      toast({ description: "Error creating column", variant: "destructive" });
-      return;
-    } else {
-      console.log("new column: ", newColumn);
-      setColumns((columns) => [...columns, newColumn]);
-    }
+    insertColumn(newColumn);
+    setColumns((columns) => [...columns, newColumn]);
   };
 
-  const renameColumn = async (id: string, title: string) => {
-    const { data, error } = await updateColumnTitle(supabase, id, title);
-
-    if (error) {
-      toast({ description: "Error updating column" });
-      return;
-    } else {
-      toast({ description: "Column updated" });
-    }
-
-    const updatedColumns: ColumnType[] = columns.map((col) => {
-      if (col.id === id) {
-        return { ...col, title };
-      }
-      return col;
-    });
-    setColumns(updatedColumns);
+  const renameColumnHandler = (
+    newTitle: ColumnType["title"],
+    columnId: ColumnType["id"],
+  ) => {
+    setColumns((columns) =>
+      columns.map((col) =>
+        col.id === columnId ? { ...col, title: newTitle } : col,
+      ),
+    );
+    updateColumnTitle({ newTitle, columnId });
   };
 
-  const deleteColumn = async (id: ColumnType["id"]) => {
-    const { data, error } = await deleteColumnById(supabase, id);
-
-    if (error) {
-      toast({ description: "Error deleting column" });
-      return;
-    } else {
-      toast({ description: "Column deleted" });
-
-      const updatedColumns: ColumnType[] = columns.filter(
-        (col) => col.id !== id,
-      );
-      setColumns(updatedColumns);
-    }
+  const deleteColumnHandler = (id: ColumnType["id"]) => {
+    deleteColumn(id);
+    setColumns((columns) => columns.filter((col) => col.id !== id));
   };
 
-  const createNewTask = async (
+  const createNewTaskHandler = (
     columnId: ColumnType["id"],
     title: ColumnType["title"],
   ) => {
@@ -261,51 +240,25 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       created_at: new Date().toISOString(),
     };
 
-    const { data, error } = await insertTask(supabase, newTask);
-
-    if (error) {
-      toast({ description: "Error creating task", variant: "destructive" });
-      return;
-    } else {
-      setTasks((tasks) => [...tasks, newTask]);
-    }
+    insertTask(newTask);
+    setTasks((tasks) => [newTask, ...tasks]);
   };
 
-  const renameTask = async (id: TaskType["id"], title: TaskType["title"]) => {
-    const taskToUpdate = tasks.find((task) => task.id === id);
-    if (!taskToUpdate) return;
-
-    console.log("renaming task from userboard with id ", id, title);
-
-    const { data, error } = await updateTaskTitle(supabase, id, title!);
-
-    if (error) {
-      toast({ description: error.message });
-      return;
-    } else {
-      toast({ description: "Task updated" });
-    }
-
-    const updatedTasks: TaskType[] = tasks.map((task) => {
-      if (task.id === id) {
-        return { ...task, title };
-      }
-      return task;
-    });
-    setTasks(updatedTasks);
+  const renameTaskHandler = (
+    taskId: TaskType["id"],
+    newTitle: TaskType["title"],
+  ) => {
+    updateTaskTitle({ taskId, newTitle });
+    setTasks((tasks) =>
+      tasks.map((task) =>
+        task.id === taskId ? { ...task, title: newTitle } : task,
+      ),
+    );
   };
 
-  const deleteTask = async (id: TaskType["id"]) => {
-    const { data, error } = await deleteTaskById(supabase, id);
-
-    if (error) {
-      toast({ description: "Error deleting task" });
-      return;
-    } else {
-      toast({ description: `'${data.title}' was deleted` });
-      const updatedTasks: TaskType[] = tasks.filter((task) => task.id !== id);
-      setTasks(updatedTasks);
-    }
+  const deleteTaskHandler = (id: TaskType["id"]) => {
+    deleteTask(id);
+    setTasks((tasks) => tasks.filter((task) => task.id !== id));
   };
 
   return (
@@ -325,15 +278,15 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
                 column={c}
                 key={c.id}
                 tasks={tasks.filter((t) => t.column_id === c.id)}
-                renameColumn={renameColumn}
-                deleteColumn={deleteColumn}
-                createNewTask={createNewTask}
-                renameTask={renameTask}
-                deleteTask={deleteTask}
+                renameColumn={renameColumnHandler}
+                deleteColumn={deleteColumnHandler}
+                createNewTask={createNewTaskHandler}
+                renameTask={renameTaskHandler}
+                deleteTask={deleteTaskHandler}
               />
             ))}
           </SortableContext>
-          <AddColumnButton onClick={createNewColumn} />
+          <AddColumnButton onClick={createColumnHandler} />
         </div>
 
         {typeof window === "object" &&
@@ -345,18 +298,18 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
                   tasks={tasks.filter(
                     (task) => task.column_id === activeColumn.id,
                   )}
-                  renameColumn={renameColumn}
-                  deleteColumn={deleteColumn}
-                  createNewTask={createNewTask}
-                  renameTask={renameTask}
-                  deleteTask={deleteTask}
+                  renameColumn={renameColumnHandler}
+                  deleteColumn={deleteColumnHandler}
+                  createNewTask={createNewTaskHandler}
+                  renameTask={renameTaskHandler}
+                  deleteTask={deleteTaskHandler}
                 />
               )}
               {activeTask && (
                 <TaskCard
                   task={activeTask}
-                  deleteTask={deleteTask}
-                  renameTask={renameTask}
+                  deleteTask={deleteTaskHandler}
+                  renameTask={renameTaskHandler}
                 />
               )}
             </DragOverlay>,

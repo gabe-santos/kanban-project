@@ -18,12 +18,29 @@ export const insertColumn = (
   return client.from("columns").insert([column]).select();
 };
 
-export const updateColumnTitle = (
+export const updateColumn = (
+  client: TypedSupabaseClient,
+  updatedColumn: ColumnType,
+  id: ColumnType["id"],
+) => {
+  return client.from("columns").update(updatedColumn).eq("id", id).select();
+};
+
+export const updateColumnTitle = async (
   client: TypedSupabaseClient,
   columnId: ColumnType["id"],
-  title: ColumnType["title"],
+  newTitle: ColumnType["title"],
 ) => {
-  return client.from("columns").update({ title }).eq("id", columnId).select();
+  const res = await client
+    .from("columns")
+    .update({ title: newTitle })
+    .eq("id", columnId)
+    .select();
+
+  if (res.error) {
+    throw new Error(res.error.message);
+  }
+  return res;
 };
 
 export const updateColumnIndex = (
@@ -50,7 +67,7 @@ export const updateColumnIndexes = async (
   });
 };
 
-export const deleteColumnById = (
+export const deleteColumn = (
   client: TypedSupabaseClient,
   columnId: ColumnType["id"],
 ) => {

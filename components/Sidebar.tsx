@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import NewBoardDialogForm from "./NewBoardDialogForm";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export default function Sidebar({ children }: { children?: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,10 +43,10 @@ export default function Sidebar({ children }: { children?: React.ReactNode }) {
       </div>
 
       <button
-        className="absolute -right-12 bottom-20 h-12 w-12 rounded-r-md border-2 border-black bg-[#bc95d4] text-xl font-bold transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+        className="absolute -right-12 bottom-20 flex h-12 w-12 items-center justify-center rounded-r-md border border-black bg-[#bc95d4] text-xl font-bold transition-all hover:-translate-x-[3px] hover:-translate-y-[3px] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
         onClick={toggleSidebar}
       >
-        {isOpen ? "<" : ">"}
+        {isOpen ? <ArrowLeft /> : <ArrowRight />}
       </button>
     </div>
   );

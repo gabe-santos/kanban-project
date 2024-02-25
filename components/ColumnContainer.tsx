@@ -18,7 +18,7 @@ interface ColumnContainerProps {
     title: ColumnType["title"],
   ) => void;
   renameTask: (id: TaskType["id"], title: TaskType["title"]) => void;
-  deleteTask: (id: TaskType["id"]) => void;
+  deleteTask: (task: TaskType) => void;
 }
 
 export default function ColumnContainer({
@@ -30,10 +30,13 @@ export default function ColumnContainer({
   renameTask,
   deleteTask,
 }: ColumnContainerProps) {
-  const tasksIds = useMemo(() => {
-    return tasks.map((task) => task.id);
+  const sortedTasks = useMemo(() => {
+    return tasks.sort((a, b) => a.index - b.index);
   }, [tasks]);
 
+  const tasksIds = useMemo(() => {
+    return sortedTasks.map((task) => task.id);
+  }, [sortedTasks]);
   const [columnTitle, setColumnTitle] = useState<ColumnType["title"]>(
     column.title,
   );
@@ -139,9 +142,8 @@ export default function ColumnContainer({
 
         {/* CONTENT */}
         <div className="flex flex-grow flex-col gap-4">
-          <div className="text-red-600">{column.index}</div>
           <SortableContext items={tasksIds}>
-            {tasks.map((task) => {
+            {sortedTasks.map((task) => {
               return (
                 <TaskCard
                   key={task.id}

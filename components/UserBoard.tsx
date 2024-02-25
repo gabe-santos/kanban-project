@@ -9,9 +9,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  closestCorners,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import ColumnContainer from "./ColumnContainer";
 import { AddColumnButton } from "./AddColumnButton";
 import { createPortal } from "react-dom";
@@ -31,6 +32,9 @@ import useUpdateColumnIndexesMutation from "@/hooks/use-update-column-indexes-mu
 import useInsertTaskMutation from "@/hooks/use-insert-task-mutation";
 import useUpdateTaskTitleMutation from "@/hooks/use-update-task-title-mutation";
 import useDeleteTaskMutation from "@/hooks/use-delete-task-mutation";
+import useUpdateTaskColumnIdMutation from "@/hooks/use-update-task-column-id";
+import useUpdateTaskIndexesMutation from "@/hooks/use-update-task-indexes-mutation";
+import useReindexTasksByColumnMutation from "@/hooks/use-reindex-tasks-by-column-mutation";
 
 export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const [columns, setColumns] = useState<ColumnType[]>([]);
@@ -67,15 +71,22 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     isSuccess: taskSuccess,
   } = useTasksQuery(boardId);
 
+  // Column mutations
   const { mutate: insertColumn } = useInsertColumnMutation(supabase);
   const { mutate: deleteColumn } = useDeleteColumnMutation(supabase);
   const { mutate: updateColumnTitle } = useUpdateColumnTitleMutation(supabase);
   const { mutate: updateColumnIndexes } =
     useUpdateColumnIndexesMutation(supabase);
 
+  // Task mutations
   const { mutate: insertTask } = useInsertTaskMutation(supabase);
   const { mutate: updateTaskTitle } = useUpdateTaskTitleMutation(supabase);
   const { mutate: deleteTask } = useDeleteTaskMutation(supabase);
+  const { mutate: updateTaskColumnId } =
+    useUpdateTaskColumnIdMutation(supabase);
+  const { mutate: updateTaskIndexes } = useUpdateTaskIndexesMutation(supabase);
+  const { mutate: reindexTasksByColumn } =
+    useReindexTasksByColumnMutation(supabase);
 
   useEffect(() => {
     if (columnsData) {
@@ -129,47 +140,80 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
   const onDragOver = (event: DragMoveEvent) => {
     const { active, over } = event;
-    if (!over) return;
+    if (!over) return; // if not over anything, return
 
     const activeId = active.id;
     const overId = over.id;
 
-    if (activeId === overId) return;
+    if (activeId === overId) return; // if active and over are the same, return
 
     const isActiveTask = active.data.current?.type === "task";
     const isOverATask = over.data.current?.type === "task";
 
-    if (!isActiveTask) return;
+    if (!isActiveTask) return; // if not a task, return
 
     // task over another task
     if (isActiveTask && isOverATask) {
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
-        const overIndex = tasks.findIndex((t) => t.id === overId);
+      console.log("task over task");
+      const activeIndex = tasks.findIndex((t) => t.id === activeId);
+      const overIndex = tasks.findIndex((t) => t.id === overId);
 
-        if (tasks[activeIndex].column_id !== tasks[overIndex].column_id) {
-          tasks[activeIndex].column_id = tasks[overIndex].column_id;
-          return arrayMove(tasks, activeIndex, overIndex);
-        }
-        return arrayMove(tasks, activeIndex, overIndex);
-      });
+      let newTasks = [...tasks];
+
+      if (tasks[activeIndex].column_id != tasks[overIndex].column_id) {
+        tasks[activeIndex].column_id = tasks[overIndex].column_id;
+        newTasks = arrayMove(tasks, activeIndex, overIndex);
+      } else {
+        newTasks = arrayMove(tasks, activeIndex, overIndex);
+      }
+      // create a new array with the updated indexes
+      const reindexedTasks = newTasks.map((task, index) => ({
+        ...task,
+        index,
+      }));
+      setTasks(reindexedTasks);
     }
+
     // task over column
     const isOverColumn = over.data.current?.type === "column";
     if (isActiveTask && isOverColumn) {
-      setTasks((tasks) => {
-        const activeIndex = tasks.findIndex((t) => t.id === activeId);
+      const activeIndex = tasks.findIndex((t) => t.id === activeId);
+      tasks[activeIndex].column_id = overId.toString();
+      tasks[activeIndex].index = 0;
 
-        tasks[activeIndex].column_id = overId.toString();
-
-        return arrayMove(tasks, activeIndex, activeIndex);
-      });
+      const newTasks = arrayMove(tasks, activeIndex, activeIndex);
+      setTasks(newTasks);
     }
   };
 
-  const onDragEnd = async (event: DragEndEvent) => {
+  const onDragEnd = (event: DragEndEvent) => {
     setActiveColumn(null);
     setActiveTask(null);
+
+    const taskMovement = event.active.data.current?.type === "task";
+    // if task, update the index
+    if (taskMovement) {
+      // update database to match current state
+
+      columns.forEach((col) => {
+        // get all tasks for the column
+        const tasksForColumn = tasks.filter(
+          (task) => task.column_id === col.id,
+        );
+        // for each task, update the index and column_id
+        tasksForColumn.forEach(async (task, index) => {
+          // TODO: convert this to a hook
+          const { data, error } = await supabase
+            .from("tasks")
+            .update({ index, column_id: task.column_id })
+            .eq("id", task.id);
+
+          if (!error) {
+            queryClient.invalidateQueries({ queryKey: ["tasksData"] });
+          }
+        });
+      });
+    }
 
     const { active, over } = event;
     if (!over || active.id === over.id) return;
@@ -192,7 +236,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     setColumns(newColumns.map((col, index) => ({ ...col, index })));
 
     // Update column indexes in the database
-    await updateColumnIndexes({ newColumns });
+    updateColumnIndexes({ newColumns });
   };
 
   const createColumnHandler = () => {
@@ -206,7 +250,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     };
 
     insertColumn(newColumn);
-    setColumns((columns) => [...columns, newColumn]);
+    setColumns([...columns, newColumn]);
   };
 
   const renameColumnHandler = (
@@ -223,7 +267,9 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
   const deleteColumnHandler = (id: ColumnType["id"]) => {
     deleteColumn(id);
-    setColumns((columns) => columns.filter((col) => col.id !== id));
+    const newColumns = columns.filter((col) => col.id !== id);
+    setColumns(newColumns);
+    updateColumnIndexes({ newColumns });
   };
 
   const createNewTaskHandler = (
@@ -232,7 +278,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   ) => {
     const newTask: TaskType = {
       id: generateUUID(),
-      index: 0,
+      index: tasks.length,
       title: title,
       column_id: columnId,
       board_id: boardId,
@@ -240,8 +286,8 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       created_at: new Date().toISOString(),
     };
 
+    setTasks([...tasks, newTask]);
     insertTask(newTask);
-    setTasks((tasks) => [newTask, ...tasks]);
   };
 
   const renameTaskHandler = (
@@ -256,19 +302,21 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     );
   };
 
-  const deleteTaskHandler = (id: TaskType["id"]) => {
-    deleteTask(id);
-    setTasks((tasks) => tasks.filter((task) => task.id !== id));
+  const deleteTaskHandler = (taskToDelete: TaskType) => {
+    const updatedTasks = tasks.filter((task) => task.id !== taskToDelete.id);
+    setTasks(updatedTasks);
+    deleteTask(taskToDelete.id);
+    reindexTasksByColumn({ newTasks: tasks, columnId: taskToDelete.column_id });
   };
 
   return (
     <div className="flex min-h-full w-full overflow-x-auto overflow-y-hidden p-10">
-      {columns.length}
       <DndContext
         sensors={sensors}
         onDragStart={onDragStart}
         onDragEnd={onDragEnd}
         onDragOver={onDragOver}
+        collisionDetection={closestCorners}
       >
         <div className="flex gap-4">
           <SortableContext items={columnIndexes}>

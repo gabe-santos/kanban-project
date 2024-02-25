@@ -10,10 +10,11 @@ import { deleteTaskById } from "@/queries/tasks";
 import { useSupabaseBrowser } from "@/utils/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { Input } from "./ui/input";
+import clsx from "clsx";
 
 interface TaskCardProps {
   task: TaskType;
-  deleteTask: (id: TaskType["id"]) => void;
+  deleteTask: (task: TaskType) => void;
   renameTask: (id: TaskType["id"], title: TaskType["title"]) => void;
 }
 
@@ -27,26 +28,19 @@ export default function TaskCard({
   const [taskTitle, setTaskTitle] = useState(task.title);
   const [editMode, setEditMode] = useState(false);
   const [color, setColor] = useState("#bc95d4");
-  const { toast } = useToast();
+  const debugTools = false;
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const {
-    setNodeRef,
-    attributes,
-    listeners,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({
-    id: task.id,
-    data: {
-      type: "task",
-      task,
-    },
-  });
+  const { setNodeRef, attributes, listeners, transform, isDragging } =
+    useSortable({
+      id: task.id,
+      data: {
+        type: "task",
+        task,
+      },
+    });
 
   const style = {
-    transition,
     transform: CSS.Transform.toString(transform),
   };
 
@@ -76,7 +70,7 @@ export default function TaskCard({
   };
 
   const handleDeleteTask = async () => {
-    deleteTask(task.id);
+    deleteTask(task);
   };
 
   return (
@@ -85,9 +79,19 @@ export default function TaskCard({
       {...attributes}
       {...listeners}
       style={style}
-      className={`flex h-[200px] cursor-grab flex-col justify-between border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`}
+      touch-action="auto"
+      className={clsx(
+        `flex h-[200px] cursor-grab flex-col justify-between border border-black bg-[${color}] shadow-none hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]`,
+        isDragging && "bg-black",
+      )}
     >
       <CardContent className="p-4 text-2xl" onClick={() => setEditMode(true)}>
+        {debugTools && (
+          <div className="flex flex-col text-sm text-red-800">
+            <div>index: {task.index}</div>
+            <div>column: {task.column_id}</div>
+          </div>
+        )}
         {!editMode && task.title}
         {editMode && (
           <Input

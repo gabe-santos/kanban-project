@@ -154,7 +154,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
     // task over another task
     if (isActiveTask && isOverATask) {
-      console.log("task over task");
       const activeIndex = tasks.findIndex((t) => t.id === activeId);
       const overIndex = tasks.findIndex((t) => t.id === overId);
 
@@ -254,15 +253,20 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   };
 
   const renameColumnHandler = (
-    newTitle: ColumnType["title"],
     columnId: ColumnType["id"],
+    newTitle: ColumnType["title"],
   ) => {
-    setColumns((columns) =>
-      columns.map((col) =>
-        col.id === columnId ? { ...col, title: newTitle } : col,
-      ),
-    );
-    updateColumnTitle({ newTitle, columnId });
+    const updatedColumns = columns.map((col) => {
+      if (col.id === columnId) {
+        return {
+          ...col,
+          title: newTitle,
+        };
+      }
+      return col;
+    });
+    setColumns(updatedColumns);
+    updateColumnTitle({ columnId: columnId, newTitle: newTitle });
   };
 
   const deleteColumnHandler = (id: ColumnType["id"]) => {

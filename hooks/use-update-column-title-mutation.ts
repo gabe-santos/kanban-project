@@ -14,10 +14,10 @@ export default function useUpdateColumnTitleMutation(
       newTitle,
       columnId,
     }: {
-      newTitle: ColumnType["title"];
       columnId: ColumnType["id"];
+      newTitle: ColumnType["title"];
     }) => {
-      return updateColumnTitle(client, newTitle, columnId);
+      return updateColumnTitle(client, columnId, newTitle);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["columnsData"] });

@@ -1,4 +1,9 @@
 "use client";
+
+import { AddColumnButton } from "@/components/AddColumnButton";
+import ColumnContainer from "@/components/ColumnContainer";
+import TaskCard from "@/components/TaskCard";
+import { generateUUID } from "@/lib/utils";
 import { BoardType, ColumnType, TaskType } from "@/utils/types";
 import {
   DndContext,
@@ -7,40 +12,129 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
+  closestCorners,
   useSensor,
   useSensors,
-  closestCorners,
 } from "@dnd-kit/core";
 import { SortableContext, arrayMove } from "@dnd-kit/sortable";
-import { Suspense, use, useEffect, useState } from "react";
-import ColumnContainer from "./ColumnContainer";
-import { AddColumnButton } from "./AddColumnButton";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
-import TaskCard from "./TaskCard";
-import { generateUUID } from "@/lib/utils";
-import { useSupabaseBrowser } from "@/utils/supabase/client";
 
-import { useQueryClient } from "@tanstack/react-query";
+const defaultBoard: BoardType = {
+  id: "board1",
+  title: "Demo Board",
+  user_id: "nobody",
+  created_at: new Date().toISOString(),
+};
 
-import useBoardQuery from "@/hooks/use-board-query";
-import useColumnsQuery from "@/hooks/use-columns-query";
-import useTasksQuery from "@/hooks/use-tasks-query";
-import useInsertColumnMutation from "@/hooks/use-insert-column-mutation";
-import useDeleteColumnMutation from "@/hooks/use-delete-column-mutation";
-import useUpdateColumnTitleMutation from "@/hooks/use-update-column-title-mutation";
-import useUpdateColumnIndexesMutation from "@/hooks/use-update-column-indexes-mutation";
-import useInsertTaskMutation from "@/hooks/use-insert-task-mutation";
-import useUpdateTaskTitleMutation from "@/hooks/use-update-task-title-mutation";
-import useDeleteTaskMutation from "@/hooks/use-delete-task-mutation";
-import useUpdateTaskColumnIdMutation from "@/hooks/use-update-task-column-id";
-import useUpdateTaskIndexesMutation from "@/hooks/use-update-task-indexes-mutation";
-import useReindexTasksByColumnMutation from "@/hooks/use-reindex-tasks-by-column-mutation";
+const defaultColumns: ColumnType[] = [
+  {
+    title: "Todo",
+    id: generateUUID(),
+    index: 0,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard.user_id,
+    created_at: Date.now().toString(),
+  },
+  {
+    title: "In Progress",
+    id: generateUUID(),
+    index: 1,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard.user_id,
+    created_at: Date.now().toString(),
+  },
+  {
+    title: "Done",
+    id: generateUUID(),
+    index: 2,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard.user_id,
+    created_at: Date.now().toString(),
+  },
+];
 
-export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
+const defaultTasks: TaskType[] = [
+  {
+    title: "Polish C-3PO",
+    id: generateUUID(),
+    column_id: defaultColumns[0].id,
+    index: 0,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard!.user_id!,
+    created_at: new Date().toISOString(),
+  },
+  {
+    title: "Thrift shop with Jawas",
+    id: generateUUID(),
+    column_id: defaultColumns[0].id,
+    index: 1,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard!.user_id!,
+    created_at: new Date().toISOString(),
+  },
+  {
+    title: "Fix Podracer engine",
+    id: generateUUID(),
+    column_id: defaultColumns[1].id,
+    index: 0,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard!.user_id!,
+    created_at: new Date().toISOString(),
+  },
+  {
+    title: "Join the Dark Side",
+    id: generateUUID(),
+    column_id: defaultColumns[1].id,
+    index: 1,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard!.user_id!,
+    created_at: new Date().toISOString(),
+  },
+  {
+    title: "Execute Order 66",
+    id: generateUUID(),
+    column_id: defaultColumns[2].id,
+    index: 0,
+    board_id: defaultBoard.id,
+    user_id: defaultBoard!.user_id!,
+    created_at: new Date().toISOString(),
+  },
+];
+
+export default function UserBoardDemo() {
   const [columns, setColumns] = useState<ColumnType[]>([]);
   const [tasks, setTasks] = useState<TaskType[]>([]);
+
   const [activeColumn, setActiveColumn] = useState<ColumnType | null>(null);
   const [activeTask, setActiveTask] = useState<TaskType | null>(null);
+  const columnIndexes = columns.map((col) => col.id);
+
+  useEffect(() => {
+    const savedColumns = localStorage.getItem("columns");
+    if (savedColumns) {
+      setColumns(JSON.parse(savedColumns));
+    } else {
+      setColumns(defaultColumns);
+    }
+
+    const savedTasks = localStorage.getItem("tasks");
+    if (savedTasks) {
+      setTasks(JSON.parse(savedTasks));
+    } else {
+      setTasks(defaultTasks);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("setting columns in local storage", columns);
+    localStorage.setItem("columns", JSON.stringify(columns));
+  }, [columns]);
+
+  useEffect(() => {
+    console.log("setting tasks in local storage", tasks);
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+  }, [tasks]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -50,83 +144,9 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     }),
   );
 
-  const supabase = useSupabaseBrowser();
-  const queryClient = useQueryClient();
-  const {
-    data: boardData,
-    isLoading: boardLoading,
-    isError: boardError,
-  } = useBoardQuery(boardId);
-
-  const {
-    data: columnsData,
-    isLoading: columnsLoading,
-    isError: columnsError,
-  } = useColumnsQuery(boardId);
-
-  const {
-    data: tasksData,
-    isLoading: taskLoading,
-    isError: taskError,
-    isSuccess: taskSuccess,
-  } = useTasksQuery(boardId);
-
-  // Column mutations
-  const { mutate: insertColumn } = useInsertColumnMutation(supabase);
-  const { mutate: deleteColumn } = useDeleteColumnMutation(supabase);
-  const { mutate: updateColumnTitle } = useUpdateColumnTitleMutation(supabase);
-  const { mutate: updateColumnIndexes } =
-    useUpdateColumnIndexesMutation(supabase);
-
-  // Task mutations
-  const { mutate: insertTask } = useInsertTaskMutation(supabase);
-  const { mutate: updateTaskTitle } = useUpdateTaskTitleMutation(supabase);
-  const { mutate: deleteTask } = useDeleteTaskMutation(supabase);
-  const { mutate: updateTaskColumnId } =
-    useUpdateTaskColumnIdMutation(supabase);
-  const { mutate: updateTaskIndexes } = useUpdateTaskIndexesMutation(supabase);
-  const { mutate: reindexTasksByColumn } =
-    useReindexTasksByColumnMutation(supabase);
-
-  useEffect(() => {
-    if (columnsData) {
-      setColumns(columnsData);
-    }
-    if (tasksData) {
-      setTasks(tasksData);
-    }
-  }, [columnsData, tasksData]);
-
-  if (boardLoading || columnsLoading || taskLoading) {
-    return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-green-700">
-        <div className="text-9xl">LOADING...</div>
-        <div className="text-4xl">
-          Replace me with a cool loading animation!
-        </div>
-      </div>
-    );
-  }
-
-  if (
-    !boardData ||
-    !columns ||
-    !tasks ||
-    boardError ||
-    columnsError ||
-    taskError
-  ) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center text-9xl">
-        Uh oh...
-      </div>
-    );
-  }
-
-  const columnIndexes = columns.map((col) => col.id);
-
   const onDragStart = (event: DragStartEvent) => {
     const { active } = event;
+
     if (active.data.current?.type === "column") {
       setActiveColumn(active.data.current.column);
       return;
@@ -140,12 +160,12 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
 
   const onDragOver = (event: DragMoveEvent) => {
     const { active, over } = event;
-    if (!over) return; // if not over anything, return
+    if (!over) return;
 
     const activeId = active.id;
     const overId = over.id;
 
-    if (activeId === overId) return; // if active and over are the same, return
+    if (activeId === overId) return;
 
     const isActiveTask = active.data.current?.type === "task";
     const isOverATask = over.data.current?.type === "task";
@@ -189,31 +209,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     setActiveColumn(null);
     setActiveTask(null);
 
-    const taskMovement = event.active.data.current?.type === "task";
-    // if task, update the index
-    if (taskMovement) {
-      // update database to match current state
-
-      columns.forEach((col) => {
-        // get all tasks for the column
-        const tasksForColumn = tasks.filter(
-          (task) => task.column_id === col.id,
-        );
-        // for each task, update the index and column_id
-        tasksForColumn.forEach(async (task, index) => {
-          // TODO: convert this to a hook
-          const { data, error } = await supabase
-            .from("tasks")
-            .update({ index, column_id: task.column_id })
-            .eq("id", task.id);
-
-          if (!error) {
-            queryClient.invalidateQueries({ queryKey: ["tasksData"] });
-          }
-        });
-      });
-    }
-
     const { active, over } = event;
     if (!over || active.id === over.id) return;
 
@@ -233,9 +228,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
     );
 
     setColumns(newColumns.map((col, index) => ({ ...col, index })));
-
-    // Update column indexes in the database
-    updateColumnIndexes({ newColumns });
   };
 
   const createColumnHandler = () => {
@@ -243,12 +235,11 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       id: generateUUID(),
       title: "New Column",
       index: columns.length,
-      board_id: boardData!.id,
-      user_id: boardData!.user_id,
+      board_id: defaultBoard.id,
+      user_id: defaultBoard!.user_id!,
       created_at: new Date().toISOString(),
     };
 
-    insertColumn(newColumn);
     setColumns([...columns, newColumn]);
   };
 
@@ -266,14 +257,11 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       return col;
     });
     setColumns(updatedColumns);
-    updateColumnTitle({ columnId: columnId, newTitle: newTitle });
   };
 
   const deleteColumnHandler = (id: ColumnType["id"]) => {
-    deleteColumn(id);
     const newColumns = columns.filter((col) => col.id !== id);
     setColumns(newColumns);
-    updateColumnIndexes({ newColumns });
   };
 
   const createNewTaskHandler = (
@@ -282,23 +270,21 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   ) => {
     const newTask: TaskType = {
       id: generateUUID(),
-      index: tasks.length,
       title: title,
       column_id: columnId,
-      board_id: boardId,
-      user_id: boardData!.user_id!,
+      index: tasks.filter((t) => t.column_id === columnId).length + 1,
+      board_id: defaultBoard.id,
+      user_id: defaultBoard!.user_id!,
       created_at: new Date().toISOString(),
     };
 
     setTasks([...tasks, newTask]);
-    insertTask(newTask);
   };
 
   const renameTaskHandler = (
     taskId: TaskType["id"],
     newTitle: TaskType["title"],
   ) => {
-    updateTaskTitle({ taskId, newTitle });
     setTasks((tasks) =>
       tasks.map((task) =>
         task.id === taskId ? { ...task, title: newTitle } : task,
@@ -309,8 +295,6 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
   const deleteTaskHandler = (taskToDelete: TaskType) => {
     const updatedTasks = tasks.filter((task) => task.id !== taskToDelete.id);
     setTasks(updatedTasks);
-    deleteTask(taskToDelete.id);
-    reindexTasksByColumn({ newTasks: tasks, columnId: taskToDelete.column_id });
   };
 
   return (
@@ -324,12 +308,11 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
       >
         <div className="flex gap-4">
           <SortableContext items={columnIndexes}>
-            {columnsLoading && <div>Loading column...</div>}
-            {columns.map((c) => (
+            {columns.map((col) => (
               <ColumnContainer
-                column={c}
-                key={c.id}
-                tasks={tasks.filter((t) => t.column_id === c.id)}
+                column={col}
+                key={col.id}
+                tasks={tasks.filter((t) => t.column_id == col.id)}
                 renameColumn={renameColumnHandler}
                 deleteColumn={deleteColumnHandler}
                 createNewTask={createNewTaskHandler}
@@ -338,6 +321,7 @@ export default function UserBoard({ boardId }: { boardId: BoardType["id"] }) {
               />
             ))}
           </SortableContext>
+
           <AddColumnButton onClick={createColumnHandler} />
         </div>
 

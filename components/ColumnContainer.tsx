@@ -54,6 +54,11 @@ export default function ColumnContainer({
     setEditMode(!editMode);
   };
 
+  const handleRenameColumn = () => {
+    renameColumn(column.id, columnTitle);
+    setEditMode(false);
+  };
+
   const {
     setNodeRef,
     attributes,
@@ -114,11 +119,10 @@ export default function ColumnContainer({
                 ref={inputRef}
                 value={columnTitle!}
                 autoFocus
-                onBlur={toggleEditMode}
+                onBlur={() => setEditMode(false)}
                 onKeyDown={(e) => {
                   if (e.key !== "Enter") return;
-                  renameColumn(column.id, columnTitle);
-                  setEditMode(false);
+                  handleRenameColumn();
                 }}
                 onChange={(e) => {
                   setColumnTitle(e.target.value);

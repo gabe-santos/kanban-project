@@ -4,7 +4,12 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { ReactQueryClientProvider } from "@/components/providers/ReactQueryClientProvider";
 
-const bricolageGrotesque = Bricolage_Grotesque({ subsets: ["latin"], fallback:['system-ui'] });
+const bricolageGrotesque = Bricolage_Grotesque({
+  subsets: ["latin"],
+  fallback: ["system-ui"],
+  display: "swap",
+  adjustFontFallback: false,
+});
 
 export default async function RootLayout({
   children,

@@ -26,7 +26,7 @@ export default async function MenuLayout({
     redirect("/");
   }
 
-  const boards: BoardType[] = boardData?.map((board) => ({
+  const boards: BoardType[] = (boardData || []).map((board) => ({
     id: board.id,
     title: board.title,
     created_at: board.created_at,

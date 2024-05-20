@@ -11,13 +11,6 @@ import { Suspense } from "react";
 import { BoardType } from "@/utils/types";
 import { redirect } from "next/navigation";
 
-const defaultBoards: BoardType[] = [
-  {
-    title: "Default Board",
-    id: "54321",
-  },
-];
-
 export default async function MenuLayout({
   children,
 }: {
@@ -33,11 +26,12 @@ export default async function MenuLayout({
     redirect("/");
   }
 
-  const boards: BoardType[] =
-    boardData?.map((board) => ({
-      id: board.id,
-      title: board.title,
-    })) || defaultBoards;
+  const boards: BoardType[] = boardData?.map((board) => ({
+    id: board.id,
+    title: board.title,
+    created_at: board.created_at,
+    user_id: board.user_id,
+  }));
 
   return (
     <div className="h-screen">
